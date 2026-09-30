@@ -136,7 +136,7 @@ And for every video:
 | Voice | "a male voice", "a British voice", "in Spanish" | Heart, an American English female voice |
 | Music | "calm music", "epic music", "techy music", "no music" | On. A bundled track if it really fits the mood; otherwise music composed for this video. |
 | Sound effects | "no sound effects", "no typing sound", "make the typing quieter" | On. Bundled sounds first; new ones are made or found when nothing fits. With `launch`, a deep "key" sound on every typed piece. |
-| Tone | "like an Apple keynote", "like an AI launch video", "like a movie trailer", "for the sprint review" | `launch`: statements that stream in, one word lit in colour, your product's icon opening the scenes (see [Tone](#tone-the-personality-of-the-video)) |
+| Tone | "like an Apple keynote", "like an AI launch video", "like a movie trailer", "for the sprint review" | `launch`: statements that stream in over a slow moving background, one word lit in colour, your product's bare logo opening the scenes, a feature tour, a recap and an end card (see [Tone](#tone-the-personality-of-the-video)) |
 | Theme | "dark", "light", "on white", "in our brand colours" | Your app's own look: its background, text colour and brand colour, light or dark |
 | Motion | "keep the logo still", "no animation on the charts" | Anything that naturally moves is animated without asking: a bird logo's wings, a radar's sweep, numbers counting up, charts drawing, a scan filling in |
 | Length | "quick", "a quick demo", "a quick version", "30 seconds", "under a minute" | The full video: everything, with the room it needs, never over 117 seconds. The quick words give a 27–47 second quick version that still shows every feature. |
@@ -247,11 +247,11 @@ The same product can be shown calm and elegant, or loud and fast. That differenc
 | **Type** | how the text looks: big or small, bold or light, capitals or not |
 | **Transitions** | how one scene becomes the next: a soft fade, a slide, a hard cut |
 
-**The default tone is `launch`.** It is built on how modern AI launch films write on screen, measured frame by frame from one, and made your product's own: big statements that stream in like a model's answer (the first word in small pieces, then whole words), the line gliding to stay centred, and one word lit in colour that flickers through a palette before it settles. Every typed piece lands with a short, deep "key" sound. Statements reset in a single frame. Where the story moves somewhere new, the line collapses into **your product's own icon** (or, when your app has no logo, a glowing orb in your brand colour that breathes on the beat of the music): it lands with a small bounce and one soft ring, then opens the next scene the way an app opens. The icon plays your logo's own motion as it lands (a horseshoe swings, wings beat, a radar sweeps), and the video closes with your product's name typing in beside it.
+**The default tone is `launch`.** It is built on how modern AI launch films write on screen, measured frame by frame from one, and made your product's own: big statements that stream in like a model's answer (the first word in small pieces, then whole words), the line gliding to stay centred, and one word lit in colour that flickers through a palette before it settles. Every typed piece lands with a short, deep "key" sound. Statements reset in a single frame, and they are never typed onto one flat colour: a slow, soft **backdrop** drawn from your app's colours moves behind them (glossy bars drifting at depth on a dark app, soft glows of your brand colours on a light one, or a gliding grid), and it breathes with the music. Where the story moves somewhere new, the line condenses into **your product's own logo**, shown bare, the way your product shows it, with no square behind it (or, when your app has no logo, a glowing orb in your brand colour that breathes on the beat of the music): it comes into focus with a soft glow of your brand colour, then opens the next scene the way an app opens. The logo plays its own motion as it arrives (a horseshoe swings, wings beat, a radar sweeps), and the video closes with your product's name typing in beside it, or on an end card.
 
-**It takes your app's look.** White is only the starting point. A dark app gets dark statements with light text, and the lit word takes your brand colour. Every colour is adjusted automatically so it stays readable. If your app icon is a gradient, or draws its own rounded tile, the icon in the video keeps that exact look. In the [interactive guide](https://claude.ai/artifact/1sdfp2ouqJX9cJoUX64Xhe), the **Theme** buttons under the preview compare light, dark and an app's own colours, and **Play with sound** plays the typing. Everything else below stays available when you ask for it.
+**It takes your app's look.** White is only the starting point. A dark app gets dark statements with light text, and the lit word takes your brand colour. Every colour is adjusted automatically so it stays readable. If you ask for your app icon instead of the bare logo, a gradient icon or one that draws its own rounded tile keeps that exact look. In the [interactive guide](https://claude.ai/artifact/1sdfp2ouqJX9cJoUX64Xhe), the **Theme** buttons under the preview compare light, dark and an app's own colours, and **Play with sound** plays the typing. Everything else below stays available when you ask for it.
 
-**Your product, in use.** Between the statements, /brag rebuilds your real screens and animates them: text types into fields, numbers count up, dialogs open, a cursor glides to a button and clicks, a finger taps a phone screen. A desktop app is laid out at its real size and filmed through a camera that zooms in and out, so its layout stays exactly yours. A big product with dozens of screens gets a **screen wall**: every screen that has no scene of its own, by its real title, in one camera glide that ends on all of them at once.
+**Your product, in use.** Between the statements, /brag rebuilds your real screens and animates them: text types into fields, numbers count up, dialogs open, a cursor glides to a button and clicks, a finger taps a phone screen. It shows them the way the best product films do: in their context (a window, a browser, the top of a laptop screen with its menu bar and notch, a phone), floating over the same moving background, with no hard cuts. A product demo becomes a **feature tour**: each feature gets a title card (its name, with a small "03 / 17" counter, typed over the product while it blurs and dims), then the feature in use: a popover springs out of its button, a notch opens into a panel, a highlight steps through the results, the camera pushes in and pulls back. It ends on a **recap** of every feature as a tile, then an **end card**: your logo, your name, your tagline and your site, whichever your project really has. A desktop app is laid out at its real size and filmed through a camera that zooms in and out, so its layout stays exactly yours. A big product with dozens of screens gets a **screen wall**: every screen that has no scene of its own, by its real title, in one camera glide that ends on all of them at once.
 
 Here is one fictional app, **Horse Tinder** (swipe to find a horse), in each of the ten tones. "On screen" is what the guide's preview shows.
 
@@ -261,11 +261,11 @@ Here is one fictional app, **Horse Tinder** (swipe to find a horse), in each of 
 - **Pace:** a new statement every 2.5–4 s: the first word streams in pieces, then words land about 0.14 s apart, then it holds
 - **Words:** short, plain statements; one key word lit in the brand colour
 - **Type:** big semibold statements in the app's own theme (dark text on light, or light on dark); lines left-aligned in a centred block
-- **Transitions:** one-frame resets between statements; where the story moves: your product's icon opening the next scene like an app, a warp out, a focus pull, a camera deep zoom; it closes on the icon beside the product's name
+- **Transitions:** one-frame resets between statements, over a slow moving backdrop; where the story moves: your product's bare logo opening the next scene like an app, a warp out, a focus pull, a camera deep zoom; inside the product, no hard cuts: title cards, morphs and camera moves; it closes on a recap and an end card, or on the logo beside the product's name
 - **Sound:** a short, deep "key" hit on every typed piece, plus energetic electronic music
 - **Best for:** every video type. It is what you get when you say nothing about tone.
 - **Ask with:** nothing: it is the default · "launch style" · "like an AI launch video"
-- **On screen:** "Horse Tinder for **Riders**" → "Find the horse that fits / your weekends and your pace" → "Swipe right on your next **ride**", which collapses into the horseshoe icon; the horseshoe swings on its nail, then the icon slides left while "Horse Tinder" types in beside it
+- **On screen:** "Horse Tinder for **Riders**" → "Find the horse that fits / your weekends and your pace" → "Swipe right on your next **ride**", which condenses into the bare horseshoe logo; the horseshoe swings on its nail as it comes into focus, then slides left while "Horse Tinder" types in beside it
 
 ```text
 use /brag to make a product demo of this app
@@ -548,6 +548,15 @@ The Hyperframes guides it reads are copied to `~/.cache/brag` (5 MB).
 - **Screens that animate the same way every time.** The kit that animates your screens computes every frame from the time alone, because frames are rendered out of order. It was tested by drawing the same video forward, backward and in a shuffled order: every visible element matched. The tests are in [`tests/`](tests/).
 - **Frames and sound, measured.** Contact sheets of every key moment, loudness and peaks measured on the final file, and a check that every typing hit is heard.
 
+### Changes on 01-10-26
+
+From trying the skill, and two product films studied frame by frame:
+
+- **Your logo stands on its own.** It is no longer put in a square that pops up. It shows bare, in its own colours, and comes into focus out of a soft blur with a glow of your brand colour that breathes with the music. A square app icon is still there if you ask for it ("show our app icon").
+- **Text never sits on one flat colour.** Every statement keeps its typing, its lit word and its key sound, over a slow moving backdrop drawn from your app's colours: glossy bars on a dark app, soft glows on a light one, or a grid. Say "flat background" to turn it off. Text colours are adjusted against the backdrop's brightest point, so everything stays readable.
+- **Your product, shown like a product film.** One continuous world with no hard cuts; the product in its context (a window, a browser, a laptop screen, a phone); a feature tour with a title card and counter for each feature over the blurred product; popovers and panels that morph open; a highlight that steps through results; a recap of every feature; and an end card with your logo, name, tagline and site.
+- A second working example, `showcase.html`, and two new test pages; the tests can now run one page at a time.
+
 ### Changes on 30-09-26
 
 From a 114-second demo of a large product, and the problems that run met:
@@ -588,7 +597,7 @@ The second line deletes the version you installed from this repository, so copy 
 |---|---|
 | `skills/brag/SKILL.md` | The skill: what it makes, how it reads your sentence, and its four steps |
 | `skills/brag/references/` | The guides it reads at each step: inspect, plan, compose, deliver, the tones, the launch style, audio, Docker |
-| `skills/brag/assets/launch/` | The launch engine: `launch-text.js` (statements and the product's icon), `launch-motion.js` (transitions and camera), `launch-ui.js` (the product-screen kit), `launch.css`, and a working `example.html` |
+| `skills/brag/assets/launch/` | The launch engine: `launch-text.js` (statements, the backdrop, the product's logo and the end card), `launch-motion.js` (transitions, title-card veil, morphs and camera), `launch-ui.js` (the product-screen kit), `launch.css` (with frames for a window, a browser, a laptop and a phone), and two working examples: `example.html` and `showcase.html` |
 | `skills/brag/assets/music/`, `assets/sfx/` | The bundled music (with beat and cue files) and sound effects |
 | `skills/brag/scripts/` | Music, sound, fonts, privacy, reading-time, check-summary and delivery scripts, all run inside Docker |
 | `skills/brag/docker/Dockerfile` | The recipe for the `brag-tools:0.8.91-r3` image |
@@ -597,7 +606,7 @@ The second line deletes the version you installed from this repository, so copy 
 
 ## Tests
 
-The launch engine and its product-screen kit have tests: four compositions checked with `hyperframes lint`, with `hyperframes check` at every tween boundary, for reading time, and for frame order (drawn forward, backward and shuffled, and compared). From the repository root:
+The launch engine and its product-screen kit have tests: six compositions checked with `hyperframes lint`, with `hyperframes check` at every tween boundary, for reading time, and for frame order (drawn forward, backward and shuffled, and compared). From the repository root:
 
 ```bash
 docker run --rm --shm-size=2g -v "$PWD":/repo -w /repo brag-tools:0.8.91-r3 sh tests/run-tests.sh
@@ -612,6 +621,9 @@ It prints one line per check and ends with `all tests passed`. [`tests/README.md
 | Hook | The first 2–3 seconds. Their job is to make people keep watching. |
 | Outro | The last few seconds: the logo and a final line. |
 | Lockup | The logo and the product name placed together, at rest. |
+| Backdrop | The slow moving background behind the statements, drawn from your app's colours. |
+| Title card | A feature's name typed over the product while the product blurs and dims behind it. |
+| Recap, end card | The close: every feature as a tile, then your logo, name, tagline and site. |
 | Poster (frame 0) | The still image people see before the video plays. /brag makes it the very first frame. |
 | Beat, BPM | The music's pulse, counted in beats per minute. At 120 BPM a beat lasts half a second, and cuts land on beats. |
 | Drop, hit | A strong moment in the music where something big happens on screen. |
