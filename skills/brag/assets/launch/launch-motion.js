@@ -10,7 +10,11 @@
  *   focus   the outgoing scene blurs away while the incoming one sharpens (0.4 s);
  *   cut     a hard cut on a beat;
  *   camera  deep zooms and pull-backs on a UI: push in on a field, follow what is typed,
- *           pull back to show the whole screen; keys eased in and out.
+ *           pull back to show the whole screen; keys eased in and out;
+ *   veil    the product blurs and dims under a title card, then clears (the feature titles of
+ *           the reference product films);
+ *   morph   a rounded shape grows or shrinks between two rectangles with a scene inside it: a
+ *           notch opening into a panel, a popover, the screen shrinking back into the logo.
  * Plus the statement exits that live in launch-text.js (one-frame reset, dim, slide, blur, and
  * the collapse into the product's icon, which calls open() for its app-open end).
  *
@@ -280,6 +284,96 @@
     return { at: at, end: at + dur };
   }
 
+  /**
+   * veil(tl, {at, scene, over, until, blur, dim, color, dur}) -> {at, clearAt, end}: the title card of
+   * the reference product films. `scene` (the product, still on screen) blurs and dims under a
+   * veil of `color` (default the current theme's background) over `dur` seconds (default 0.25),
+   * stays so while a title is typed over it on a transparent stage above it, then clears from
+   * `until` (default at + 1.2) as the title leaves. blur in px (default 14), dim the veil's
+   * opacity (default 0.6). The scene stays out of the layout audit while veiled: the title sits
+   * over its text on purpose. Pass the title's stage as `over`: a stage with class "lt-stage lt-over"
+   * (transparent), which the veil shows on top of the scene at `at`; exit the title with "blur" at
+   * `until` (default at + 1.6, enough for a two-word title to be read).
+   */
+  function veil(tl, o) {
+    var scene = o.scene, at = o.at || 0, dur = o.dur || 0.25;
+    var until = o.until !== undefined ? o.until : at + 1.6;
+    var b = o.blur !== undefined ? o.blur : 14, dim = o.dim !== undefined ? o.dim : 0.6;
+    var cover = scene.__lmVeil;
+    if (!cover) {
+      cover = document.createElement("div");
+      cover.className = "lm-veil";
+      cover.setAttribute("data-layout-ignore", "");
+      cover.style.opacity = "0";
+      scene.appendChild(cover);
+      scene.__lmVeil = cover;
+    }
+    var color = o.color || theme().bg;
+    function draw(time) {
+      var k = ease((time - at) / dur, "out") * (1 - ease((time - until) / dur, "inout"));
+      k = Math.max(0, Math.min(1, k));
+      scene.style.filter = k > 0.002 ? "blur(" + (b * k).toFixed(2) + "px)" : "none";
+      cover.style.background = color;
+      cover.style.opacity = (dim * k).toFixed(3);
+    }
+    // clean before and after, for frames drawn out of order
+    tl.set(scene, { filter: "none" }, at);
+    tl.set(cover, { opacity: 0 }, at);
+    var proxy = { t: at };
+    tl.to(proxy, { t: until + dur, duration: until + dur - at, ease: "none", immediateRender: false,
+      onUpdate: function () { draw(proxy.t); } }, at);
+    tl.set(scene, { filter: "none" }, until + dur);
+    tl.set(cover, { opacity: 0 }, until + dur);
+    if (o.over) enter(tl, o.over, at);   // the title's stage, on top of the scene
+    // out of the audit until the title has blurred away too (a "blur" exit takes 0.4 s)
+    quiet(tl, scene, at, until + Math.max(dur, 0.45));
+    log(at, "veil");
+    note("veil", at, until + dur, null, null);
+    return { at: at, clearAt: until, end: until + dur };
+  }
+
+  /**
+   * morph(tl, {at, scene, from, to, dur, fade, hide}) -> {at, end}: a rounded shape grows or
+   * shrinks from one rectangle to another with `scene` showing inside it: a notch opening into a
+   * panel, a popover springing out of its menu-bar item, a card becoming the whole screen, or the
+   * whole screen shrinking back to a rounded square before the logo comes into focus there (the
+   * close of the first reference film). from and to are {x, y, w, h, r}: centre, size and corner
+   * radius in frame px; leave one out for the full frame. dur seconds (default 0.5, eased in and
+   * out). A growing scene is shown on top at `at` and fades in over `fade` seconds (default 0);
+   * with hide: true the scene is leaving: it is hidden at the end, fading out over the last
+   * `fade` seconds. Pair it with camera() when the content should scale with the shape.
+   */
+  function morph(tl, o) {
+    var scene = o.scene;
+    var W = scene.clientWidth || 1920, H = scene.clientHeight || 1080;
+    var full = { x: W / 2, y: H / 2, w: W, h: H, r: 0 };
+    var A = Object.assign({}, full, o.from || {}), B = Object.assign({}, full, o.to || {});
+    var at = o.at || 0, dur = o.dur || 0.5, fade = o.fade || 0, hiding = !!o.hide;
+    function isFull(R) { return R.w >= W - 0.5 && R.h >= H - 0.5 && !R.r; }
+    function shape(time) {
+      var q = ease((time - at) / dur, "inout");
+      var x = A.x + (B.x - A.x) * q, y = A.y + (B.y - A.y) * q, w = A.w + (B.w - A.w) * q, h = A.h + (B.h - A.h) * q;
+      var r = (A.r || 0) + ((B.r || 0) - (A.r || 0)) * q;
+      return "inset(" + (y - h / 2).toFixed(1) + "px " + (W - x - w / 2).toFixed(1) + "px " + (H - y - h / 2).toFixed(1) + "px " +
+        (x - w / 2).toFixed(1) + "px round " + r.toFixed(1) + "px)";
+    }
+    function alpha(time) {
+      if (!fade) return 1;
+      return hiding ? Math.max(0, Math.min(1, (at + dur - time) / fade)) : Math.max(0, Math.min(1, (time - at) / fade));
+    }
+    if (!hiding) enter(tl, scene, at);
+    tl.set(scene, { clipPath: shape(at), opacity: alpha(at) }, at);
+    var proxy = { t: at };
+    tl.to(proxy, { t: at + dur, duration: dur, ease: "none", immediateRender: false,
+      onUpdate: function () { scene.style.clipPath = shape(proxy.t); scene.style.opacity = alpha(proxy.t).toFixed(3); } }, at);
+    if (hiding) leave(tl, scene, at + dur);
+    else tl.set(scene, { clipPath: isFull(B) ? "none" : shape(at + dur), opacity: 1 }, at + dur);
+    quiet(tl, scene, at, at + dur);
+    log(at, "morph");
+    note("morph", at, at + dur, hiding ? scene : null, hiding ? null : scene);
+    return { at: at, end: at + dur };
+  }
+
   /** cut(tl, {at, from, to}) is a hard cut: `to` on top and visible, `from` hidden, on one frame. */
   function cut(tl, o) {
     var at = o.at || 0;
@@ -332,6 +426,7 @@
 
   window.LaunchMotion = {
     open: open, reveal: reveal, warp: warp, focus: focus, cut: cut, camera: camera, enter: enter,
+    veil: veil, morph: morph,
     // leave() on its own is a transition too: the scene goes at t
     leave: function (tl, el, t) { leave(tl, el, t); note("leave", t, t, el, null); },
     moves: moves

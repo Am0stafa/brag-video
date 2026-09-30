@@ -84,13 +84,25 @@
       var t = k / 50;
       var m = hex([c[0] + (target[0] - c[0]) * t, c[1] + (target[1] - c[1]) * t, c[2] + (target[2] - c[2]) * t]);
       if (backs.every(function (b) { return contrast(m, b) >= min; })) {
-        if (warn && t > 0.35 && window.console) console.warn("launch-text: " + colour + " needed a big shift to read on " + bg + "; consider another accent");
+        // warn only when the colour needs a big shift on the app's own background: the extra
+        // lift for the backdrop is the engine's business, not a reason to change the brand
+        if (warn) warn = (backs.length > 1 ? shiftOf(colour, bg, min) : t) > 0.35;
+        if (warn && window.console) console.warn("launch-text: " + colour + " needed a big shift to read on " + bg + "; consider another accent");
         return m;
       }
     }
     return hex(target);
   }
   function fit(colour, bg, min, warn) { return fitAll(colour, [bg], min, warn); }
+  // how far toward black or white a colour must move to reach `min` against bg alone (0 to 1)
+  function shiftOf(colour, bg, min) {
+    var c = rgb(colour), target = isDark(bg) ? [255, 255, 255] : [0, 0, 0];
+    for (var k = 0; k <= 50; k++) {
+      var t = k / 50;
+      if (contrast(hex([c[0] + (target[0] - c[0]) * t, c[1] + (target[1] - c[1]) * t, c[2] + (target[2] - c[2]) * t]), bg) >= min) return t;
+    }
+    return 1;
+  }
 
   // The film's hues, for the lit word's flicker. On its white canvas the text versions are
   // deepened to pass contrast.
@@ -348,6 +360,8 @@
   // already holds a shared one: then the stage turns transparent over it.
   function ensureBackdrop(tl, stage, th) {
     if (stage.__ltBd !== undefined) return;
+    // a title stage over a veiled product (class "lt-over") stays transparent
+    if (stage.classList && stage.classList.contains("lt-over")) { stage.__ltBd = null; return; }
     for (var p = stage.parentElement; p; p = p.parentElement) {
       if (p.__ltBd) { stage.__ltBd = null; stage.style.background = "transparent"; return; }
     }
@@ -684,6 +698,10 @@
    *              line wider than this is wrapped into two balanced lines first
    *   noWrap     keep a single line on one line (shrink the type instead)
    *   y          vertical offset of the block centre in px (default 0)
+   *   count      [n, total]: a small feature counter ("03 / 17") centred above the statement, the
+   *              number in the accent, for a feature tour where each feature has its own title
+   *              (launch-style.md, "The showcase layer"); it arrives with the first word and
+   *              leaves with the statement
    */
   function statement(tl, stage, opts) {
     opts = opts || {};
@@ -730,6 +748,20 @@
     // a slide exit leaves the frame on purpose (Hyperframes' mark for exit travel)
     if (exit === "slide") block.setAttribute("data-layout-allow-overflow", "");
     stage.appendChild(block);
+    // the feature counter above the statement ("03 / 17")
+    var countEl = null, countW = 0, countH = 0;
+    if (opts.count) {
+      var cn = String(opts.count[0]), ct = String(opts.count[1]);
+      while (cn.length < Math.max(2, ct.length)) cn = "0" + cn;
+      countEl = el("div", "lt-block lt-count");
+      countEl.style.fontSize = Math.max(24, Math.round(size * 0.2)) + "px";
+      countEl.style.color = fitAll(mix(th.ink, th.bg, 0.4), th.backs, 4.5);
+      countEl.style.visibility = "hidden";
+      countEl.innerHTML = '<span class="lt-count-n">' + esc(cn) + "</span> / " + esc(ct);
+      countEl.firstChild.style.color = th.accent;
+      stage.appendChild(countEl);
+      countW = countEl.offsetWidth; countH = countEl.offsetHeight;
+    }
     function plainWidth(str) {
       var longest = slot ? slot.reduce(function (a, b) { return a.length >= b.length ? a : b; }, "") : "slot";
       block.textContent = str.replace(/\{slot\}/g, longest).replace(/[{}]/g, "");
@@ -1015,6 +1047,11 @@
       block.style.filter = blur ? "blur(" + blur.toFixed(2) + "px)" : "none";
       block.style.transformOrigin = (s.w / 2) + "px " + (s.h / 2) + "px";
       block.style.transform = "translate(" + x.toFixed(2) + "px," + y.toFixed(2) + "px) scale(" + scale.toFixed(4) + ")";
+      if (countEl) {
+        countEl.style.opacity = opacity.toFixed(3);
+        countEl.style.filter = block.style.filter;
+        countEl.style.transform = "translate(" + ((W - countW) / 2).toFixed(2) + "px," + (y - countH - size * 0.14).toFixed(2) + "px)";
+      }
       // colours: the key word flickers then settles; slot candidates keep their own colour
       var spans = block.querySelectorAll(".lt-w");
       for (var n = 0; n < spans.length; n++) {
@@ -1099,9 +1136,13 @@
     tl.to(proxy, { t: tweenEnd, duration: Math.max(FRAME, tweenEnd - at), ease: "none", onUpdate: render, immediateRender: false }, at);
     tl.set(block, { visibility: "inherit" }, at); // "inherit", not "visible": a hidden scene hides its text
     if (hideAt !== null) tl.set(block, { visibility: "hidden" }, hideAt);
+    if (countEl) {
+      tl.set(countEl, { visibility: "inherit" }, at);
+      tl.set(countEl, { visibility: "hidden" }, hideAt !== null ? (exit === "mark" ? exitAt : hideAt) : tweenEnd);
+    }
     // A statement that stays ("none") gives way to the next statement on this stage, the way a
     // kept icon does; otherwise it shows again whenever the stage comes back.
-    if (exit === "none") stage.__ltKept = { els: [block], from: at };
+    if (exit === "none") stage.__ltKept = { els: countEl ? [block, countEl] : [block], from: at };
     if (mk) {
       tl.set(mk.el, { visibility: "inherit" }, markAt);
       if (mk.ring) {
@@ -1225,9 +1266,146 @@
     return { at: at, end: at + landDur + hold, el: mk.el, glyph: mk.glyph || null };
   }
 
+  /**
+   * endcard(tl, stage, {at, name, tagline, cta, url, note, hold, y}) -> {at, end, glyph, markAt}:
+   * the close of the reference product films (launch-style.md, "The showcase layer"). The logo
+   * comes into focus with its glow, large, above the centre; the product's name types in under
+   * it word by word with the key sound; then the tagline, the call to action (a pill in the
+   * brand colour) beside the site, and a small note come into focus one after another, 0.3 s
+   * apart. Everything stays to the end of the stage. Every line must come from the project (its
+   * README tagline, its site, its install command, its "requires" line) or the prompt; leave
+   * out whatever the project doesn't have.
+   *   name     default the theme's mark.name     tagline, cta, url, note  optional strings
+   *   hold     seconds from the last line to `end` (default 2)
+   *   y        vertical offset of the whole card in px (default 0)
+   */
+  function endcard(tl, stage, opts) {
+    opts = opts || {};
+    var th = opts.theme ? resolve(opts.theme) : (stage.__ltTheme || current);
+    ensureBackdrop(tl, stage, th);
+    var W = stage.clientWidth || 1920, H = stage.clientHeight || 1080;
+    var at = opts.at || 0;
+    var spec = th.mark || current.mark || {};
+    var name = String(opts.name || spec.name || "");
+    if (!name) throw new Error("launch-text: endcard needs `name` (or the theme's mark.name)");
+    if (stage.__ltKept && stage.__ltKept.from < at) {
+      stage.__ltKept.els.forEach(function (e) { tl.set(e, { visibility: "hidden" }, at); });
+      stage.__ltKept = null;
+    }
+    var muted = fitAll(mix(th.ink, th.bg, 0.3), th.backs, 4.5);
+    var faint = fitAll(mix(th.ink, th.bg, 0.45), th.backs, 4.5);
+    function line(cls, px, colour, text) {
+      var e = el("div", "lt-block lt-card " + cls);
+      e.style.fontSize = Math.round(px) + "px";
+      e.style.color = colour;
+      e.style.visibility = "hidden";
+      if (text !== undefined) e.textContent = text;
+      stage.appendChild(e);
+      return e;
+    }
+    // the parts, measured at their final size
+    var nameEl = line("lt-card-name", W * 0.047, th.ink, name);
+    var tagEl = opts.tagline ? line("lt-card-tag", W * 0.0185, muted, opts.tagline) : null;
+    var rowEl = null, pill = null;
+    if (opts.cta || opts.url) {
+      rowEl = line("lt-card-row", W * 0.0135, th.ink);
+      if (opts.cta) {
+        pill = el("span", "lt-card-cta");
+        var onPill = contrast("#ffffff", th.brand) >= contrast("#0b0d10", th.brand) ? "#ffffff" : "#0b0d10";
+        var pillBg = contrast(onPill, th.brand) >= 4.5 ? th.brand : fit(th.brand, onPill, 4.5);
+        pill.style.background = pillBg;
+        pill.style.color = onPill;
+        pill.textContent = opts.cta;
+        rowEl.appendChild(pill);
+      }
+      if (opts.url) {
+        var u = el("span", "lt-card-url");
+        u.textContent = opts.url;
+        rowEl.appendChild(u);
+      }
+    }
+    var noteEl = opts.note ? line("lt-card-note", Math.max(20, W * 0.0105), faint, opts.note) : null;
+    var logoPx = Math.round(W * 0.085);
+    var mk = makeMark(th, logoPx, stage, true);
+    // stack them, centred, a little above the frame's centre
+    var gaps = [H * 0.035, H * 0.012, H * 0.04, H * 0.035];
+    var parts = [{ h: mk.px }, { el: nameEl }, { el: tagEl }, { el: rowEl }, { el: noteEl }];
+    var total = 0;
+    parts.forEach(function (p, i) {
+      if (p.el === null) return;
+      p.h = p.h || p.el.offsetHeight;
+      p.w = p.el ? p.el.offsetWidth : mk.px;
+      total += p.h + (i ? gaps[i - 1] : 0);
+    });
+    var y = (H - total) / 2 + (opts.y || 0), placed = [];
+    parts.forEach(function (p, i) {
+      if (p.el === null) return;
+      if (i) y += gaps[i - 1];
+      p.y = y;
+      y += p.h;
+      placed.push(p);
+    });
+    var cx = W / 2, logoY = parts[0].y + mk.px / 2;
+    mk.el.style.transformOrigin = "50% 50%";
+    mk.el.style.transform = "translate(" + (cx - mk.px / 2).toFixed(2) + "px," + (logoY - mk.px / 2).toFixed(2) + "px)";
+    // the name types in, word by word, left-aligned inside its final centred box
+    var words = name.split(/\s+/).filter(Boolean), nameT = [], nt = at + 0.45;
+    for (var w = 0; w < words.length; w++) { nameT.push(nt); emit(nt, "word"); nt += RHYTHM[w % RHYTHM.length] * FRAME; }
+    var nameBox = parts[1];
+    nameEl.style.width = nameBox.w + "px";
+    nameEl.textContent = "";
+    nameEl.style.transform = "translate(" + (cx - nameBox.w / 2).toFixed(2) + "px," + nameBox.y.toFixed(2) + "px)";
+    // the rest come into focus one after another
+    var next = nt + 0.25, rest = [];
+    [tagEl, rowEl, noteEl].forEach(function (e, k) {
+      if (!e) return;
+      var p = parts[k + 2];
+      rest.push({ el: e, t: next, x: cx - p.w / 2, y: p.y });
+      next += 0.3;
+    });
+    var last = rest.length ? rest[rest.length - 1].t : nameT[nameT.length - 1];
+    var end = last + (opts.hold !== undefined ? opts.hold : 2);
+    var glowPlan = mk.bare && mk.land === "focus" ? breathPlan(at + landTime(mk), true) : null;
+    var orbPlan = mk.orb ? breathPlan(at + landTime(mk), true) : null;
+    var FOCUS_IN = 0.4;
+    function look(e, t0, x, yy, time) {
+      var q = ease((time - t0) / FOCUS_IN, "out");
+      e.style.opacity = Math.max(0, Math.min(1, (time - t0) / (FOCUS_IN * 0.7))).toFixed(3);
+      e.style.filter = q < 0.999 ? "blur(" + (8 * (1 - q)).toFixed(2) + "px)" : "none";
+      e.style.transform = "translate(" + x.toFixed(2) + "px," + (yy + 10 * (1 - q)).toFixed(2) + "px)";
+    }
+    function render(time) {
+      var lk = landing(mk, time, at);
+      var b = orbPlan ? breathAt(time, orbPlan) : 0;
+      mk.el.style.transform = "translate(" + (cx - mk.px / 2).toFixed(2) + "px," + (logoY - mk.px / 2).toFixed(2) + "px) scale(" +
+        (lk.sc * (1 + 0.08 * b)).toFixed(4) + ")";
+      paintLanding(mk, lk);
+      if (mk.orb) paintOrb(mk, 1, b);
+      if (glowPlan) paintGlow(mk, glowAt(time, at, glowPlan));
+      var nn = 0;
+      while (nn < nameT.length && nameT[nn] <= time + 1e-6) nn++;
+      if (nameEl.__n !== nn) { nameEl.textContent = words.slice(0, nn).join(" "); nameEl.__n = nn; }
+      rest.forEach(function (r) { look(r.el, r.t, r.x, r.y, time); });
+    }
+    rest.forEach(function (r) { look(r.el, r.t, r.x, r.y, r.t + FOCUS_IN); });   // the settled look, for frames the clock never reaches
+    var tEnd = Math.max(end, windowEnd(stage, at)), proxy = { t: at };
+    tl.to(proxy, { t: tEnd, duration: Math.max(FRAME, tEnd - at), ease: "none", immediateRender: false,
+      onUpdate: function () { render(proxy.t); } }, at);
+    tl.set(mk.el, { visibility: "inherit" }, at);
+    tl.set(nameEl, { visibility: "inherit" }, nameT[0]);
+    rest.forEach(function (r) { tl.set(r.el, { visibility: "inherit" }, r.t); });
+    stage.__ltKept = { els: [mk.el, nameEl].concat(rest.map(function (r) { return r.el; })), from: at };
+    emit(at, "mark");
+    var plain = name + (opts.tagline ? " " + opts.tagline : "");
+    statements.push({ stage: stage, at: nameT[0], last: rest.length && tagEl ? rest[0].t : nameT[nameT.length - 1],
+      built: nameT[nameT.length - 1] + FRAME, exitAt: end, end: end, exit: "none",
+      text: name + (opts.tagline ? " / " + opts.tagline : ""), words: plain.split(/\s+/).filter(Boolean).length });
+    return { at: at, end: end, glyph: mk.glyph || null, markAt: at };
+  }
+
   window.LaunchText = {
     statement: statement, mark: mark, dot: mark /* the older name, now the product's logo */,
-    backdrop: backdrop,
+    endcard: endcard, backdrop: backdrop,
     theme: theme, resolve: resolve, fit: fit, fitAll: fitAll, contrast: contrast, mix: mix, music: setMusic,
     // the first beat of the music at or after t (t itself without music): lock cuts to it
     nextBeat: function (t) { return music ? nextBeat(t) : t; },

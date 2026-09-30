@@ -108,10 +108,14 @@ Copy the blank composition out of the image (runtime-docker.md), then build
 `<skill-dir>/assets/launch/launch-text.js`, `launch-motion.js`, `launch-ui.js` and
 `launch.css` into `composition/assets/launch/`, link them in `<head>` (the three scripts in
 that order), set the app's theme with `LaunchText.theme(...)` (step 1's light or dark
-colours), build every statement with `LaunchText.statement(...)`, join scenes with
-`LaunchMotion.reveal / warp / focus / camera`, and animate the product screens with
-`LaunchUI` (below), as in `assets/launch/example.html` and launch-style.md, "Build it".
-Then:
+colours, its backdrop and its mark), build every statement with `LaunchText.statement(...)`,
+join scenes with `LaunchMotion.reveal / warp / focus / camera / veil / morph`, and animate the
+product screens with `LaunchUI` (below), as in `assets/launch/example.html` and
+launch-style.md, "Build it". For a product demo, or a feature with several uses, follow
+launch-style.md, "The showcase layer", and start from `assets/launch/showcase.html`: one
+world under a single backdrop, the product framed in its context (`.lu-window`, `.lu-browser`,
+`.lu-laptop`, `.lu-phone`), a title card per feature over the veiled product, the recap of
+every feature and the end card. Then:
 
 - **Local assets only**: GSAP is already in `assets/vendor/gsap.min.js`; put the product's
   fonts in `assets/fonts/` (the project's files, or `fetch_fonts.py`), logos and audio in
@@ -171,6 +175,8 @@ run were UI animation bugs these helpers now prevent:
 | `U.sample(scene)` | the "Sample data" label, pinned to the frame, outside the camera | a label that zooms and slides with the UI |
 | `U.wall(tl, wallEl, {at, pan})` | the screen wall (launch-style.md): a camera glide over every screen's real title, then a pull-back | covering 30+ screens honestly in a few seconds |
 | `U.keys(at, text, cps)` | logs key sounds for typing inside the UI: every second character, at least 90 ms apart | hits 36 ms apart that buzz |
+| `U.select(tl, bar, [{t, at: row}])` | a highlight that steps through a list, taking each row's box, like a launcher's selection | a highlight drawn by hand that drifts off its rows when the list or the camera moves |
+| `U.show(tl, el, t, {blur})` | an appearance that also comes into focus, for a grid of tiles | tiles that pop in flat, or a focus-in written as a second tween that fights the first |
 
 Call `U.ellipsis(ui)` first in `build()`, before anything measures a point. Clicks, taps and
 keys are logged in the event log, so `sfx_tags.py` places their sounds (audio.md). The

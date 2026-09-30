@@ -62,6 +62,7 @@ run_page transitions tests/compositions/transitions.html ""
 run_page marks tests/compositions/marks.html ""
 run_page backdrops tests/compositions/backdrops.html ""
 run_page example "$SKILL/assets/launch/example.html" 22.5
+run_page showcase "$SKILL/assets/launch/showcase.html" ""
 
 if [ "$failed" -eq 0 ]; then echo "all tests passed"; else echo "$failed test(s) failed"; fi
 exit "$failed"

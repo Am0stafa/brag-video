@@ -93,10 +93,10 @@ Write `<output-dir>/brag-plan.md`: the angle, the coverage list, the storyboard 
 
 Write `composition-brief.md`, prepare the audio (voice over first, because it sets the timing; then music and sound effects), and build `<output-dir>/composition/`, including every motion found in the plan ([references/motion-opportunities.md](references/motion-opportunities.md)). With the default `launch` tone, read [references/launch-style.md](references/launch-style.md), and work in this order, so the music is composed once, to final times:
 
-1. set the app's theme, and build the statements and scene transitions with the engine in `assets/launch/`, on the plan's beat grid;
+1. set the app's theme (with its backdrop and its bare logo), and build the statements and scene transitions with the engine in `assets/launch/`, on the plan's beat grid; for a product demo or a feature with several uses, lay out the showcase from `assets/launch/showcase.html` (one world, the product in its context, a titled feature tour, the recap, the end card);
 2. check that every statement can be read: `launch_events.cjs` prints a reading-time table, and every row must say `ok`;
 3. lock those times, then compose the music to them (or place the bundled track);
-4. animate the product screens with `assets/launch/launch-ui.js` (scene clock, appearances, cursor, taps, "…" labels, the "Sample data" label, the screen wall);
+4. animate the product screens with `assets/launch/launch-ui.js` (scene clock, appearances, a stepping highlight, cursor, taps, "…" labels, the "Sample data" label, the screen wall) and the morphs and camera of `launch-motion.js`;
 5. once the timeline is final, make the typing sound from the event log, and the other sound-effect tags with `sfx_tags.py`.
 
 /brag is its own workflow: don't enter the `hyperframes` intent interview, and don't hand off to its `product-launch-video` or `pr-to-video` workflows. /brag owns the story, the laws and the copy; the Hyperframes domain skills own the implementation. Where they disagree with /brag (waiting for approval to render, sending feedback reports, audio carving), follow the list in step-3-compose.md.
@@ -130,7 +130,7 @@ These apply to every video, whatever the type or tone.
 
 **Hook first.** The first two seconds decide whether anyone keeps watching. Plan the hook before anything else; for a feature it is usually the problem, stated the way the person who hit it would say it.
 
-**Show the real thing.** Rebuild the product's actual UI, copy and flow in HTML with its real colors and fonts, and show it *in use*: typing, clicking, results appearing. Never fill a scene with abstract shapes or generic motion graphics.
+**Show the real thing.** Rebuild the product's actual UI, copy and flow in HTML with its real colors and fonts, and show it *in use*: typing, clicking, results appearing. Show it in its context (a window, a browser, a laptop screen, a phone), the way its user meets it. Never fill a scene with abstract shapes or generic motion graphics.
 
 **Alive by default.** Whatever naturally moves, moves, without being asked: the logo's wings beat, a radar's sweep turns, numbers count up, charts draw, a scan fills in as it finds things. Build it, list it in the plan, and name it when delivering, so the user can switch any of it off in one sentence.
 
@@ -146,6 +146,8 @@ These apply to every video, whatever the type or tone.
 
 **Cover everything.** Every feature, screen, result and request is on screen; a shorter video shows more per scene, never less.
 
+**One continuous world.** No flat single-colour canvas and no hard cuts between product moments: a slow backdrop drawn from the app's colours sits under everything, and the camera, focus pulls and morphs carry every change.
+
 **Every frame postable.** Any frozen frame should look good enough to post.
 
 ## Tones
@@ -154,7 +156,7 @@ Tones are vocabulary for pacing and style; the prompt picks one in words ("like 
 
 | Tone | Feel | Good for |
 |---|---|---|
-| **`launch`** (default) | Statements that stream in like a model's answer, in the app's own theme, over a slow living backdrop; one lit word flickering through colour; a deep key sound on every typed piece; the product's bare logo coming into focus and opening scenes like an app, warps and camera moves; a close on the logo beside the product's name | every video, unless the prompt asks for another tone; "OpenAI-style" |
+| **`launch`** (default) | Statements that stream in like a model's answer, in the app's own theme, over a slow living backdrop; one lit word flickering through colour; a deep key sound on every typed piece; the product's bare logo coming into focus and opening scenes like an app; the product in its context, a feature tour with title cards, camera moves and morphs; a recap of every feature and an end card (or the logo beside the product's name) | every video, unless the prompt asks for another tone; "OpenAI-style" |
 | `polished` | Serious, elegant, restrained | "like an Apple keynote", premium products |
 | `ai-demo` | Dark, calm keynote; typed prompt → thinking → cited answer | "show it thinking", agent demos |
 | `app-store` | Smooth feature cards | "clean feature cards" |
@@ -165,7 +167,7 @@ Tones are vocabulary for pacing and style; the prompt picks one in words ("like 
 | `chaotic` | Fast and loud | when the prompt asks for chaos |
 | `deadpan` | Dry, nothing is a joke | understated humor |
 
-**When the prompt says nothing about tone, every video type uses `launch`.** Its writing rules, look, motion, transitions, typing sound and pacing were measured frame by frame from a modern AI launch film: [references/launch-style.md](references/launch-style.md). It takes the app's own theme (light or dark) rather than always white. Its text and transition engine, its kit for animating product screens (`launch-ui.js`) and a working example are in `assets/launch/`; `scripts/launch_events.cjs` checks the statements' reading time and, with `scripts/typing_track.py`, makes the typing sound.
+**When the prompt says nothing about tone, every video type uses `launch`.** Its writing rules, look, motion, transitions, typing sound and pacing were measured frame by frame from a modern AI launch film, and the way it shows the product (one world over a moving backdrop, the product in its context, a feature tour with title cards, the recap of every feature, the end card) from two current product films: [references/launch-style.md](references/launch-style.md). It takes the app's own theme (light or dark) rather than always white. Its text and transition engine, its kit for animating product screens (`launch-ui.js`) and two working examples (`example.html`, `showcase.html`) are in `assets/launch/`; `scripts/launch_events.cjs` checks the statements' reading time and, with `scripts/typing_track.py`, makes the typing sound.
 
 ## Telling the user
 

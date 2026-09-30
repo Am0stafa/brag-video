@@ -10,6 +10,7 @@ the same Docker image the skill uses, never on your Mac.
 | `compositions/transitions.html` | `exit: "none"` followed by another statement on the same stage, then a focus pull and a circle reveal between scenes whose text sits in the same place |
 | `compositions/marks.html` | the product's mark in every form: the bare logo coming into focus (in the lockup and filling the frame), an app icon with its own tile (opening a scene), a gradient tile (filling the frame), the older "pop" landing, and the brand orb |
 | `compositions/backdrops.html` | the living backdrop behind the statements: slats, aurora and grid under lit words and slots, a cut and a focus pull between them, the music's downbeat pulse, and one backdrop shared by a whole world with a bare-logo lockup on it |
+| `../skills/brag/assets/launch/showcase.html` | the skill's showcase example: one world under a shared backdrop, a hook opening into a laptop screen, four title cards with counters over the veiled product, a popover and a notch panel morphing open and closed, a stepping highlight, a counter, a toggle and its toast, notifications, a recap of every feature coming into focus, and the end card |
 | `../skills/brag/assets/launch/example.html` | the skill's own working example |
 
 Each page must pass four checks:

@@ -20,7 +20,10 @@ caret, exits, the product's mark, transitions and camera for you, logs every typ
 for the sound, and checks that every statement can be read (see "Build it"). Its kit
 `launch-ui.js` animates the product screens between the statements: a scene clock for
 typed fields and counters, appearances, a cursor, taps, "…" labels, the "Sample data"
-label and the screen wall. A working example is `assets/launch/example.html`.
+label and the screen wall. Two working examples: `assets/launch/example.html` (the statements,
+transitions and a product screen) and `assets/launch/showcase.html` (a product shown the way
+the showcase films show it: one world, the product in its context, a feature tour, the recap
+and the end card).
 
 ---
 
@@ -67,8 +70,8 @@ it is.
 ### The backdrop: the canvas is never one flat colour
 
 The film types onto a flat colour. /brag doesn't: a flat single-colour background is the
-one thing users of the first version asked to lose, and the best product films put their
-words over a background that moves. So every stage that
+one thing users of the first version asked to lose, and both films in "The showcase layer"
+put their words over a background that moves. So every stage that
 holds statements gets a **backdrop**: a slow, soft, living background drawn from the
 theme's own background, ink and brand colour, under exactly the same typing, lit word,
 key sound and type. The words stay the style; only the canvas comes alive.
@@ -216,7 +219,10 @@ Product moments (built with `launch-ui.js` and Hyperframes, in the same calm rhy
 This is /brag's own signature. The film ends its statements in a colour-cycling dot, and
 /brag never copies it. Here a statement condenses into **the product's own logo** instead,
 shown bare, the way the product shows it: no square, no tile, no pop. The product carries
-the motion, so the video can't be mistaken for anyone else's.
+the motion, so the video can't be mistaken for anyone else's. (Both films in "The showcase
+layer" below treat the logo this way: it stands on its own and comes into focus with a soft
+glow of its colour; a rounded shape exists only for a moment, while the logo turns into the
+product or back.)
 
 - **Find it in step 1.** Take the logo mark from the repo (a `logo.svg`, the navbar, the
   favicon's glyph without its rounded square) and draw it as a simple SVG in its own
@@ -259,6 +265,8 @@ the motion, so the video can't be mistaken for anyone else's.
   - **fill:** a field of the brand colour grows out of the logo (`markEnd: "fill"`);
   - **lockup:** the logo slides left and the product's name types in beside it
     (`markEnd: "lockup"`), which is the close;
+  - **end card:** the logo over the name, the tagline and the call to action
+    (`LaunchText.endcard`, "The showcase layer");
   - **on its own:** `LaunchText.mark(tl, stage, { at, x, y })` gives a logo moment
     anywhere.
 - **Give it the logo's own motion.** Look at what the logo shows, and play that motion
@@ -269,12 +277,109 @@ the motion, so the video can't be mistaken for anyone else's.
   moment the product's. (The orb has no logo, so `glyph` is null: its breath is its motion,
   built in.)
 - **How often:** once or twice in the middle as a transition (open, fill), and once at the
-  close (lockup). Not after every statement: the one-frame reset stays the
+  close (lockup or end card). Not after every statement: the one-frame reset stays the
   default.
 
 For example, an attack surface manager whose logo is a teal radar shows the radar bare on
 its dark canvas, and the sweep turns once as it comes into focus. A rounded shape grows out
 of it into the asset inventory, and the video closes on the radar beside the product's name.
+
+---
+
+## The showcase layer
+
+The launch film gives /brag its words: typed statements, the lit word, the key sound. Two
+current product films give it the rest: how the product itself is shown. Both were measured
+frame by frame (positions, timings, sound), and neither is copied: no brand, product, line or
+logo of theirs is used. `assets/launch/showcase.html` is a working example of everything
+below, on a fictional app.
+
+**Film A: a light product loop** (32 s = one 16 s loop played twice; 1280×720, 30 fps; a
+120 BPM beat, loud, bass-heavy). A menu-bar app.
+
+| Time | What happens |
+|---|---|
+| 0.0–1.3 s | the bare logo, with the product's name typed in beside it letter by letter; the lockup re-centres as it grows, then holds ≈ 1 s |
+| 1.3–2.3 s | the lockup dims and a light rounded rectangle grows out of it into the top of a laptop screen (menu bar and notch); the camera settles on the screen |
+| 2.3–6.5 s | the cursor glides to the app's menu-bar item and clicks; a popover springs open under it: rows, a ring chart |
+| 6.5–12.5 s | the notch widens into a dark panel, which grows with each click: rows, a detail with progress bars, a tooltip, "Add to Calendar" turning into "On your calendar" |
+| 12.5–13.5 s | the panel collapses back into the notch, which now shows a small live status |
+| 13.5–15.3 s | the camera pulls back; the screen loses its frame and shrinks into a rounded square; the logo comes into focus in it; the square dissolves and leaves the bare logo: the first frame again, so it loops without a seam |
+
+**Film B: a dark feature tour** (104 s; 1280×720, 60 fps; ≈ 124 BPM). A keyboard launcher.
+
+| Time | What happens |
+|---|---|
+| 0–2.5 s | a keyboard in perspective in the dark; the shortcut's keys light up with a coloured outline as they are pressed (the trigger), over a quiet intro |
+| 2.5–4 s | the keyboard blurs away and the product's window comes into focus in its place; the name and a one-line description appear beside it; the music drops |
+| 4–95 s | 17 features, ≈ 5.3 s each: a **title card** (the window blurs and dims, the feature's name in large white type, a small "01 / 17" counter above it with the number in the brand colour, ≈ 1 s), then the **feature in use**: a query typed, results filtering, a highlight stepping through the rows, the view opening, the camera pushing in on the detail and pulling back; windows float with deep soft shadows |
+| throughout | behind everything, one backdrop of glossy diagonal bars drifting slowly at depth, never a flat colour |
+| 95–99 s | the **recap**: one line ("Everything is one keystroke away.") over a grid of all 17 features, each tile its icon and name, coming into focus tile after tile |
+| 99–104 s | the grid blurs away; the logo emerges from the dark with a glow of its own colour (no tile); then the name, the tagline, a call-to-action pill beside the site, and a small note, each ≈ 0.3 s after the one before |
+
+Neither film has a single hard cut (a scene-change detector finds none): every change is a
+morph, a focus pull or a camera move.
+
+### What /brag takes from them
+
+1. **One continuous world.** Between the scenes of a product, no hard cuts: the camera
+   pushes in and pulls back, scenes blur into each other, shapes morph. The one-frame reset
+   stays only between statements in a run, where it is the typing's rhythm.
+2. **The canvas moves** (the backdrop, above), and for a product demo it is **one world**:
+   a single backdrop on a container holds the statements, the product and the close.
+3. **The logo stands bare** and emerges with a glow (the product's mark, above).
+4. **The product in its context.** Show the product the way its user meets it: a desktop
+   app in a window (`.lu-window`) or on the top of a laptop screen with its menu bar and notch
+   (`.lu-laptop`), a web app in a browser (`.lu-browser`), a mobile app on a phone
+   (`.lu-phone`), floating over the backdrop with a deep soft shadow. Build the UI inside at
+   its real size and let the camera scale it (step-3-compose.md).
+5. **Open on the trigger or the lockup.** Either the product's own trigger (the shortcut's
+   keys lighting up, a tap on the icon, the command typed in a terminal) with the product
+   answering it, or the hook statement condensing into the logo, which opens into the
+   product in its context (the laptop growing out of the logo).
+6. **A feature tour.** For every feature: a title card (`LaunchMotion.veil` over the
+   product, the feature's name typed on a transparent stage above it, with `count: [n,
+   total]` when the tour has five or more titled features), then the feature in use with the
+   camera pushing in and pulling back. Titles are the product's own feature names.
+7. **Micro-interactions carry the use:** a highlight stepping through a list
+   (`LaunchUI.select`), a popover springing out of its button and a notch or island opening
+   into a panel and closing again (`LaunchMotion.morph`), toasts and notifications
+   (`LaunchUI.pop`, `show`), counters and progress (`LaunchUI.clock`, `count`), the cursor's
+   clicks (`LaunchUI.cursor`).
+8. **Close on everything.** The recap puts the whole coverage list on screen: one line over
+   a grid of every feature, each tile its icon (the product's own icons when it has them) and
+   its name, coming into focus one after another (`.lu-recap`, `LaunchUI.show` with `blur`).
+   Then the end card (`LaunchText.endcard`): the logo, the name, and whichever of a tagline,
+   a call to action, the site and a note the project really has. For a short loop ("as a
+   loop", "for a GIF"), close instead by pulling back and shrinking the product into a
+   rounded square (`LaunchMotion.morph` with `hide`) in which the logo comes into focus
+   (`LaunchText.mark`), so the last frame is the first.
+9. **Sound:** a quiet intro under the trigger, the drop on the product's reveal, a beat of
+   about 120–124 BPM, soft clicks, ticks and whooshes on the interactions and morphs.
+
+### The moves, and how to build them
+
+| Move | Film | Engine |
+|---|---|---|
+| lockup opening: the bare logo, the name typed in beside it | A | a statement with `exit: "mark", markEnd: "lockup"`, or `LaunchText.mark` then a statement |
+| the product grows out of the logo | A | `markEnd: "open", next: productScene`, with a camera on the product starting far out (`zoom` ≈ 0.12, the product the logo's size) and coming in over the opening |
+| product in its context | A, B | `.lu-laptop` (`.lu-screen`, `.lu-menubar`, `.lu-notch`), `.lu-window` / `.lu-browser` (`.lu-bar` with three `<i>` and a `<b>` title, `.lu-body`), `.lu-phone` (`.lu-screen`, `.lu-island`); add `.lu-light` for a light product |
+| title card with counter | B | `LaunchMotion.veil(tl, {at, scene, over: titleStage, until})` and `LaunchText.statement(tl, titleStage, {lines: ["Custom layouts"], count: [5, 17], exit: "blur", until})` on a `lt-stage lt-over` |
+| popover, notch or island panel opening and closing | A | `LaunchMotion.morph(tl, {at, scene: panel, from: notchRect, to: {r}})`, and back with `hide: true` |
+| highlight stepping through results | B | `LaunchUI.select(tl, bar, [{t, at: row}, …])`, the bar a `.lu-select` behind the rows |
+| camera push-in on the detail, pull-back | A, B | `LaunchMotion.camera` keys measured with `LaunchUI.point` |
+| the product shrinking back into the logo (the loop) | A | `LaunchMotion.morph(tl, {at, scene, to: {w, h, r}, hide: true})` with a camera pull-back, then `LaunchText.mark` at the centre |
+| recap of every feature | B | `.lu-recap` of `.lu-chip`s (`.lu-chip-icon` + the name) and `LaunchUI.show(tl, chips, t, {stagger: 0.1, blur: 10})` under a statement at `y: -250` |
+| end card | B | `LaunchText.endcard(tl, stage, {at, tagline, cta, url, note})` |
+
+### Pacing in the showcase
+
+- A title card lasts about 1.6–1.9 s: the film's ≈ 1 s is faster than /brag's reading rule,
+  and the reading rule wins (a two-word title needs 1.2 s after its last word).
+- A feature in use lasts 3–5 s: one interaction, one camera push-in and pull-back.
+- 17 features take ≈ 100 s this way; with more, or in a shorter video, group the small ones
+  (one title, several quick uses) and let the recap name them all.
+- Recap ≈ 3–4 s (the line typed, the tiles in, a beat to take it in); end card ≈ 3–4 s.
 
 ---
 
@@ -285,9 +390,12 @@ of it into the asset inventory, and the video closes on the radar beside the pro
 - A **new statement every 2.5–4 s**. A 30-second video holds 6–9 statements; a 60-second
   one 12–16; a 117-second one about 27, with product moments between them. A longer video
   has more statements and moments at this same pace, never slower ones.
-- **Resets are instant.** The energy comes from the typing rhythm, not from transitions.
-  Use an app open, warp or focus pull only where the story changes place: about one every
-  8–15 s (2–4 in 30 s, 8–11 in 117 s; at most one in the quick version).
+- **Resets are instant between statements.** The energy comes from the typing rhythm, not
+  from transitions. Use an app open, warp or focus pull only where the story changes place:
+  about one every 8–15 s (2–4 in 30 s, 8–11 in 117 s; at most one in the quick version).
+- **No hard cuts inside the product.** Between product moments, the camera, the veil of a
+  title card and the morphs carry every change, the way the showcase films do; a feature
+  tour follows "Pacing in the showcase" (above).
 - Put each statement's first word on a beat of the music.
 
 ## Sound
@@ -334,11 +442,15 @@ Lengths follow video-types.md. Every video covers everything on the plan's cover
 The full video takes the room that needs, at most 117 s; the quick version (only when
 asked) is 27–47 s and covers the same list in less depth.
 
-**Product demo (usually 47–82 s; 82–117 s with many features):** the title with the lit
-word → what powers it, condensing into the logo, which opens a dark scene or the product
-→ every feature, each a statement and a product moment (UI card, camera), in the order a
-user meets them → a warp or focus pull back → the closing line → the lockup. There are no
-chapter numbers or progress bar in this style; the statements are the chapters. With many
+**Product demo (usually 47–82 s; 82–117 s with many features):** one world (a single
+backdrop under everything) → the hook with the lit word, or the product's own trigger → the
+hook condensing into the logo, which opens into the product in its context (a window, a
+browser, a laptop screen, a phone) → the feature tour, in the order a user meets the
+features: for each, a title card over the veiled product (with a counter when there are five
+or more) and the feature in use, the camera pushing in and pulling back, with a statement
+between groups where the story turns → the recap: one closing line over every feature as a
+tile → the end card, or the lockup when the project has no tagline or site to show. The
+statements and titles are the chapters; there is no progress bar. With many
 features, show more in each scene: a parallel frame ("Match on ___") whose slot names one
 feature per word while the camera moves to each on its screen, floating chips for the
 small ones, an orbit for integrations and counts, and for a large product the screen wall:
@@ -347,9 +459,10 @@ every screen that has no scene of its own, by its real title, in one glide and p
 within 117 s: each screen is really on screen, titled as the product titles it.
 
 **Feature brag (usually 42–82 s):** the problem as a statement ("Every refresh wiped your
-filters.") → life before as a product moment, dimmed → the feature's name, lit and
-flickering → the feature at work, every use it adds (UI card, camera, cursor) → what got
-better as a slot or a counting number → the lockup. Keep the problem-first order from
+filters.") → life before as a product moment in its context, dimmed → the feature's name,
+lit and flickering (or as a title card over the product) → the feature at work, every use it
+adds, each with its micro-interactions and a camera push-in (titled with a counter when it
+adds five or more) → what got better as a slot or a counting number → the lockup. Keep the problem-first order from
 video-types.md; this style only changes how it is written and moved.
 
 **Before and after (usually 32–62 s):** "Before" as a dimmed UI moment → a statement
@@ -436,21 +549,23 @@ Options at a glance: `at`, `lines`, `theme` (with `mark`), `step`, `pieces`, `un
 `rate`, `caret`, `accent`, `ink`, `flicker`, `flickerAll`, `slot`, `slotColors`,
 `slotHold`, `think`, `hold` or `until`, `exit` (`none`: stays until the next statement on
 its stage), `markEnd` (`hide`, `keep`, `lockup` + `name`, `open` + `next`, `fill`),
-`markHold`, `size`, `maxWidth`, `noWrap`, `y`. The mark takes `svg` or `src`, `color`,
+`markHold`, `size`, `maxWidth`, `noWrap`, `y`, `count` (a feature counter, `[n, total]`). The mark takes `svg` or `src`, `color`,
 `name`, `orb` (no logo, on purpose), and only for an app icon the user asked for: `tile`
 (`true`, or `"own"` for an app icon with its own tile), `background`, `radius`, `style` and
 `land` (`"pop"` for the older landing).
 `LaunchText.mark(tl, stage, {at, x, y, hold, keep})` shows the logo on its own.
+`LaunchText.endcard(tl, stage, {at, name, tagline, cta, url, note, hold, y})` is the end card.
 The theme takes `backdrop` (`auto`, `slats`, `aurora`, `grid`, `flat`, or `{kind, intensity, speed,
 seed, angle, pulse, colors}`), and `LaunchText.backdrop(tl, host, [spec])` draws one on any
 container: a product scene, or a world shared by every stage.
 `LaunchText.music({bpm, offset} | {bpm, beats})` gives it the music's beats, and
 `LaunchText.nextBeat(t)` returns the first beat at or after `t`. `LaunchText.timing()`
 returns the reading-time rows that `launch_events.cjs` prints.
-`LaunchMotion.open / reveal / warp / focus / cut / camera` join scenes, and
+`LaunchMotion.open / reveal / warp / focus / cut / camera / veil / morph` join scenes, and
 `LaunchMotion.moves` lists them. `LaunchUI.clock / typed / doneAt / caret / count / keys /
-show / hide / pop / swap / fromTo / quiet / cursor / tap / point / ellipsis / sample / wall`
-animate the product screens. Each file's header documents every option. Older compositions that
+show (with `blur` to come into focus) / hide / pop / swap / fromTo / quiet / select / cursor / tap / point /
+ellipsis / sample / wall` animate the product screens, and launch.css frames them (`.lu-window`,
+`.lu-browser`, `.lu-laptop`, `.lu-phone`, `.lu-recap`). Each file's header documents every option. Older compositions that
 say `exit: "dot"` get the logo.
 
 The engine is seek-safe. Visibility uses GSAP property sets, and the look is computed from
@@ -486,7 +601,10 @@ audited again from the transition's end. The warp's streak layer is never audite
 - Leave out any feature to make a video shorter, or fold it into another scene where it
   is never actually shown, even in the quick version. When time is short, show more in
   each scene (grouped features, a quick run), never less.
-- Add chapter numbers, eyebrows or progress bars. Those belong to other tones.
+- Add chapter numbers, eyebrows or progress bars. The one exception is the feature counter
+  ("03 / 17") on the title cards of a tour with five or more titled features.
+- Cut hard between product moments, or show the product as a flat screenshot: it lives in
+  its context (a window, a browser, a laptop screen, a phone) and the camera moves over it.
 - Copy the reference film's brand (its logo, product names, lines or its own typeface), or
   its signature moves: a colour-cycling dot, or any other moment a viewer would recognise
   as that film's. The product's own logo is this style's signature.

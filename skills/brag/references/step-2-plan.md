@@ -54,6 +54,14 @@ solves and for whom.]
 ## Story
 [The type's shape from video-types.md, filled in: the scenes in order with one line each.]
 
+## Showcase (`launch`)
+[launch-style.md, "The showcase layer". Leave a line out only when it doesn't apply.]
+- Context: [window / browser / laptop screen / phone], light or dark, and why that is where its user meets it
+- Opening: [the product's trigger (which keys, which tap, which command) or the hook condensing into the logo, which opens into the product]
+- Feature tour: [each feature's title as the product names it, with its counter if there are five or more, and the interaction that shows it in use: typed query, stepping highlight, morphing panel, toast, counter]
+- Recap: [the closing line, and every tile: icon (the product's own, or none) and name]
+- Close: [end card (tagline, call to action, site, note, each with its source) / lockup / loop back to the opening frame]
+
 ## Visual identity
 [From step 1.]
 - Background / surfaces / text / accent / status colors: [hex values; the source's oklch/hsl alongside]

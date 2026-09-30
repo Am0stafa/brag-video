@@ -34,7 +34,10 @@ docker run --rm --shm-size=2g -v "$OUT":/work -w /work/composition brag-tools:0.
 
 Look at the contact sheet: `composition/snapshots/contact-sheet.jpg`, or
 `contact-sheet-1.jpg … -N.jpg` for many frames. Then look at single frames only where
-something looks wrong. Every snapshot run empties the folder, so copy a sheet into
+something looks wrong. With `launch`, also check the look: no statement sits on one flat colour
+(unless the prompt asked), the logo stands bare (no tile unless asked), the product is in its
+context, every title card's product is blurred and dim enough for the title to read, and the
+recap names every feature on the coverage list. Every snapshot run empties the folder, so copy a sheet into
 `review/` if you want to keep it. A frame that is plain white except for emoji is a
 snapshot glitch: re-take it in a small batch, or check that moment in the render. Fix,
 re-check, re-snapshot the fixed moments, and delete `composition/snapshots/` before
