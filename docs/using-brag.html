@@ -1,0 +1,1299 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Using /brag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&family=Geist:wght@600&display=swap">
+<style>
+/* Layout: an editing-suite guide. One reading column with a sticky contents rail on wide screens;
+   story timelines are drawn like clips on an edit timeline, coloured by video type. */
+:root {
+  --bg: #f2f4f7;
+  --surface: #ffffff;
+  --surface-2: #e9edf3;
+  --ink: #151920;
+  --muted: #566170;
+  --line: #d6dde6;
+  --accent: #2b53c4;        /* the playhead */
+  --on-accent: #ffffff;
+  --clip-demo: #0b8385;     /* timeline clip colours, one per video type */
+  --clip-feature: #b86200;
+  --clip-ba: #6b45cc;
+  --good: #1d7f47;
+  --warn: #a86400;
+  --bad: #b73737;
+  --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 8px 24px rgba(20, 30, 50, .06);
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Instrument Sans", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #151a21; --surface-2: #1c222b; --ink: #e6eaf0; --muted: #9ba5b3;
+    --line: #29313c; --accent: #7d9cff; --on-accent: #0e1116;
+    --clip-demo: #3cc2c4; --clip-feature: #f0a444; --clip-ba: #a98cff;
+    --good: #52c78e; --warn: #f0a444; --bad: #f27b7b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #151a21; --surface-2: #1c222b; --ink: #e6eaf0; --muted: #9ba5b3;
+  --line: #29313c; --accent: #7d9cff; --on-accent: #0e1116;
+  --clip-demo: #3cc2c4; --clip-feature: #f0a444; --clip-ba: #a98cff;
+  --good: #52c78e; --warn: #f0a444; --bad: #f27b7b;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body);
+  font-size: 16.5px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+.page {
+  max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 80px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px;
+}
+@media (min-width: 1100px) {
+  .page { grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+}
+main { min-width: 0; display: grid; gap: 72px; }
+section { display: grid; gap: 20px; scroll-margin-top: 20px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(40px, 7vw, 64px); line-height: 1.02; font-weight: 800; }
+h2 { font-size: clamp(26px, 3.6vw, 34px); line-height: 1.12; font-weight: 750; }
+h3 { font-size: 21px; line-height: 1.2; font-weight: 700; }
+p { margin: 0; max-width: 66ch; }
+a { color: var(--accent); }
+code, .mono { font-family: var(--mono); font-size: .88em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 0;
+}
+.lede { font-size: 19px; color: var(--muted); max-width: 60ch; }
+.muted { color: var(--muted); }
+
+/* contents rail */
+.toc { font-size: 14.5px; }
+.toc nav { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.toc a { color: var(--muted); text-decoration: none; }
+.toc a:hover { color: var(--ink); }
+@media (min-width: 1100px) {
+  .toc nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); flex-direction: column; gap: 9px;
+    border-left: 2px solid var(--line); padding-left: 16px; }
+}
+
+/* timecode badge: the subject's own vernacular */
+.tc { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+
+/* prompt cards */
+.prompts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.prompt-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 16px 14px;
+  display: grid; gap: 10px; align-content: start; min-width: 0; border-top: 4px solid var(--clip, var(--accent));
+}
+.prompt-card .kind { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--clip, var(--accent)); font-weight: 500; }
+.prompt { font-family: var(--mono); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; margin: 0; }
+.copy {
+  justify-self: start; font: 500 13px var(--body); color: var(--accent); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer;
+}
+.copy:hover { border-color: var(--accent); }
+.demo { --clip: var(--clip-demo); }
+.feature { --clip: var(--clip-feature); }
+.ba { --clip: var(--clip-ba); }
+
+/* steps */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; counter-reset: step; }
+.steps li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: start; }
+.steps li::before {
+  counter-increment: step; content: counter(step); font: 700 15px var(--display); width: 30px; height: 30px;
+  border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--ink);
+}
+.callout {
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+  border-radius: 10px; padding: 14px 16px; max-width: 76ch;
+}
+
+/* builder */
+.builder { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); display: grid; gap: 18px; }
+.fields { display: grid; gap: 14px 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label, .field .label { font-size: 13.5px; font-weight: 600; }
+.field input[type="text"], .field select {
+  width: 100%; font: 15px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 10px;
+}
+.field.wide { grid-column: 1 / -1; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips input { position: absolute; opacity: 0; pointer-events: none; }
+.chips label {
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; cursor: pointer; font-size: 14.5px;
+  background: var(--bg);
+}
+.chips input:checked + label { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chips input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.out { background: var(--surface-2); border-radius: 12px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.out .prompt { font-size: 15px; }
+.plan { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 14.5px; }
+.plan dt { color: var(--muted); }
+.plan dd { margin: 0; min-width: 0; }
+
+/* word table */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+th { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--surface-2); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+td .say { font-family: var(--mono); font-size: 13.5px; }
+
+/* video types */
+.types { display: grid; gap: 28px; }
+.type { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.type-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.type-head h3 { color: var(--ink); }
+.type-head .len { font-family: var(--mono); font-size: 13px; color: var(--clip); font-weight: 500; }
+.type .answers { font-size: 17px; }
+.timeline { overflow-x: auto; padding-bottom: 4px; }
+.track { display: flex; gap: 3px; min-width: 620px; }
+.seg {
+  flex: var(--s) 1 0; min-width: 0; background: color-mix(in srgb, var(--clip) 16%, var(--surface));
+  border-top: 3px solid color-mix(in srgb, var(--clip) 55%, var(--surface)); border-radius: 4px;
+  padding: 8px 8px 7px; display: grid; gap: 2px;
+}
+.seg.key { background: color-mix(in srgb, var(--clip) 30%, var(--surface)); border-top-color: var(--clip); }
+.seg b { font-size: 13px; line-height: 1.25; font-weight: 600; }
+.seg span { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.ruler { display: flex; justify-content: space-between; min-width: 620px; font-family: var(--mono); font-size: 11px; color: var(--muted); padding-top: 4px; }
+.notes { margin: 0; padding-left: 20px; display: grid; gap: 4px; max-width: 76ch; }
+.examples-inline { display: grid; gap: 8px; }
+.ex { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: var(--surface-2); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.ex .prompt { flex: 1 1 260px; min-width: 0; font-size: 13.5px; }
+
+/* tone */
+.tone-grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .tone-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; } }
+.four { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+.four div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.four b { font-family: var(--display); font-size: 17px; }
+.four span { font-size: 14px; color: var(--muted); }
+.tone-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tone-tabs button {
+  font: 500 14px var(--mono); padding: 6px 11px; border-radius: 7px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink); cursor: pointer;
+}
+.tone-tabs button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.monitor { display: grid; gap: 8px; min-width: 0; }
+.monitor-bar { display: flex; justify-content: space-between; gap: 10px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.replay { font: 500 12.5px var(--body); color: var(--accent); background: none; border: 0; cursor: pointer; padding: 0; }
+.screen {
+  container-type: inline-size; position: relative; aspect-ratio: 16 / 9; width: 100%; max-width: 100%;
+  border-radius: 12px; overflow: hidden; display: grid; place-items: center; text-align: center;
+  box-shadow: var(--shadow);
+}
+.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.sheet h3 { font-family: var(--mono); font-size: 18px; font-weight: 500; }
+.sheet dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 0; font-size: 14.5px; }
+.sheet dt { color: var(--muted); }
+.sheet dd { margin: 0; min-width: 0; }
+.say-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.say-chips span { font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border-radius: 6px; padding: 2px 7px; }
+
+/* the ten looks inside the preview screen: each sets its own ground and ink */
+.s-inner { width: 100%; height: 100%; display: grid; place-items: center; align-content: center; gap: 2.2cqw; padding: 6cqw; }
+.t-launch { background: #fdfdfd; color: #000000; }
+.t-launch .lt, .t-launch .lt-static { font: 600 5.2cqw/1.3 "Geist", "Instrument Sans", system-ui, sans-serif; letter-spacing: -0.012em; }
+.t-launch .lt { position: absolute; left: 0; top: 0; white-space: pre; text-align: left; }
+.t-launch .lt-mark { position: absolute; left: 0; top: 0; display: grid; place-items: center; border-radius: 23%; visibility: hidden; }
+.t-launch .lt-mark svg { width: 62%; height: 62%; display: block; overflow: visible; }
+.t-launch .lt-ring { position: absolute; left: 0; top: 0; border: 2px solid; border-radius: 23%; box-sizing: border-box; visibility: hidden; }
+.t-launch .lt-name { position: absolute; left: 0; top: 0; white-space: pre; visibility: hidden; font: 600 5.2cqw/1.3 "Geist", "Instrument Sans", system-ui, sans-serif; letter-spacing: -0.012em; }
+.t-launch .lt-static { display: inline-flex; align-items: center; gap: 1.6cqw; }
+.t-launch .lt-static .tile { display: inline-grid; place-items: center; width: 4.9cqw; height: 4.9cqw; border-radius: 23%; }
+.t-launch .lt-static .tile svg { width: 62%; height: 62%; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tryout { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+.tryout .q { margin: 0 0 6px; font-weight: 700; }
+.tryout ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.lt-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; }
+.lt-ctl[hidden] { display: none; }
+.lt-ctl-label { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-right: 2px; }
+.lt-ctl button { font: 500 12.5px var(--body); color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 3px 11px; cursor: pointer; }
+.lt-ctl button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+#lt-sound { margin-left: auto; }
+.t-polished { background: #0f1319; color: #eef1f5; }
+.t-polished .eb { font: 500 1.6cqw var(--mono); letter-spacing: .3em; color: #8d97a6; }
+.t-polished .hl { font: 300 6.2cqw/1.1 var(--body); letter-spacing: -.01em; }
+.t-polished .sub { font: 400 2.2cqw var(--body); color: #aab3c0; }
+.t-ai { background: #0b0d10; color: #e9edf2; text-align: left; }
+.t-ai .box { width: 78%; border: 1px solid #2b3139; border-radius: 1.4cqw; padding: 2.2cqw 2.6cqw; font: 400 2.6cqw var(--mono); background: #12161b; min-height: 7cqw; }
+.t-ai .caret { display: inline-block; width: .6em; height: 1.05em; background: #7d9cff; vertical-align: -0.15em; margin-left: 2px; }
+.t-ai .think { width: 78%; font: 400 2cqw var(--mono); color: #8d97a6; }
+.t-ai .ans { width: 78%; font: 500 3cqw/1.35 var(--body); }
+.t-ai .cite { display: inline-block; font: 400 1.7cqw var(--mono); color: #7d9cff; border: 1px solid #2f3a55; border-radius: .6cqw; padding: .2cqw .8cqw; margin-right: .8cqw; }
+.t-app { background: #eef1f6; color: #121720; }
+.t-app .card { background: #fff; border-radius: 2.2cqw; padding: 3.2cqw 4cqw; box-shadow: 0 1.4cqw 3cqw rgba(20, 30, 60, .14); display: grid; grid-template-columns: auto 1fr; gap: 2.4cqw; align-items: center; text-align: left; width: 70%; }
+.t-app .ring { width: 11cqw; height: 11cqw; border-radius: 50%; display: grid; place-items: center; font: 700 3cqw var(--display); color: #0b6e70; background: conic-gradient(#0b8385 0 92%, #dfe6ee 0); position: relative; }
+.t-app .ring::after { content: ""; position: absolute; inset: 1.3cqw; border-radius: 50%; background: #fff; }
+.t-app .ring span { position: relative; z-index: 1; }
+.t-app .ct { font: 700 4cqw var(--display); }
+.t-app .cs { font: 400 2.3cqw var(--body); color: #4a5563; }
+.t-change { background: #111418; color: #f1f3f5; }
+.t-change .before { font: 500 4.6cqw/1.15 var(--body); color: #8a929c; }
+.t-change .after { font: 600 5.4cqw/1.1 var(--body); }
+.t-change .pr { font: 400 1.9cqw var(--mono); color: #9aa3ad; }
+.t-change .tag { font: 500 1.7cqw var(--mono); letter-spacing: .2em; color: #9aa3ad; }
+.t-cine { background: radial-gradient(ellipse at 50% 60%, #1d2640 0%, #07090f 70%); color: #f5f1e8; }
+.t-cine::before, .t-cine::after { content: ""; position: absolute; left: 0; right: 0; height: 11%; background: #000; z-index: 2; }
+.t-cine::before { top: 0; } .t-cine::after { bottom: 0; }
+.t-cine .small { font: 600 1.8cqw var(--display); letter-spacing: .45em; color: #c9c1ad; }
+.t-cine .big { font: 800 8cqw/1 var(--display); letter-spacing: .04em; }
+.t-default { background: #ffd35c; color: #1c1a17; }
+.t-default .hl { font: 800 6.6cqw/1.02 var(--display); letter-spacing: -.02em; }
+.t-default .pill { font: 600 2.2cqw var(--body); background: #1c1a17; color: #ffd35c; border-radius: 99px; padding: .9cqw 2.6cqw; }
+.t-yc { background: #ffffff; color: #0f172a; }
+.t-yc .logo { font: 700 2.4cqw var(--body); color: #2448d8; letter-spacing: -.01em; }
+.t-yc .hl { font: 500 4.4cqw/1.2 var(--body); max-width: 80%; }
+.t-yc .sub { font: 400 1.9cqw var(--body); color: #64748b; }
+.t-chaos { background: #ff2e63; color: #fff; overflow: hidden; }
+.t-chaos .w { font: italic 800 11cqw/0.9 var(--display); text-transform: uppercase; display: block; }
+.t-chaos .w:nth-child(1) { color: #fff; transform: rotate(-4deg); }
+.t-chaos .w:nth-child(2) { color: #1b0a3a; transform: rotate(3deg) translateX(4cqw); }
+.t-chaos .w:nth-child(3) { color: #ffe14a; transform: rotate(-2deg) translateX(-3cqw); }
+.t-dead { background: #ececea; color: #262626; }
+.t-dead .l1 { font: 400 2.6cqw var(--mono); }
+.t-dead .l2 { font: 400 1.9cqw var(--mono); color: #6b6b6b; }
+
+/* motion: one move per tone, only when the viewer allows motion */
+@media (prefers-reduced-motion: no-preference) {
+  .anim-fade { animation: fade 1.2s ease-out both; }
+  .anim-soft { animation: soft 1.4s cubic-bezier(.2, .7, .2, 1) both; }
+  .anim-slide { animation: slide .7s cubic-bezier(.2, .8, .2, 1) both; }
+  .anim-bounce { animation: bounce .8s cubic-bezier(.3, 1.6, .5, 1) both; }
+  .anim-zoom { animation: zoom 3.2s ease-out both; }
+  .anim-shake { animation: shake .45s steps(2) 3 both; }
+  .anim-slow { animation: fade 2.4s ease-in both; }
+  .delay-1 { animation-delay: .35s; } .delay-2 { animation-delay: .7s; } .delay-3 { animation-delay: 1.1s; }
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes soft { from { opacity: 0; transform: translateY(1.2cqw); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes slide { from { opacity: 0; transform: translateX(8cqw); } to { opacity: 1; transform: none; } }
+@keyframes bounce { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+@keyframes zoom { from { opacity: 0; transform: scale(1.12); } 30% { opacity: 1; } to { opacity: 1; transform: scale(1); } }
+@keyframes shake { 0% { translate: -1cqw 0; } 50% { translate: 1cqw .5cqw; } 100% { translate: 0 0; } }
+
+/* sound */
+.fork { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 720px) { .fork { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.fork .q { grid-column: 1 / -1; font-family: var(--display); font-size: 19px; font-weight: 700; }
+.branch { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.branch .ans { font-family: var(--mono); font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.styles { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); }
+.style { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 4px; align-content: start; }
+.style b { font-family: var(--mono); font-size: 15px; font-weight: 500; }
+.style span { font-size: 14.5px; }
+.style em { font-style: normal; font-size: 13px; color: var(--muted); }
+.meter { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; }
+.meter-scale { position: relative; height: 16px; border-radius: 8px; background: linear-gradient(90deg, var(--surface-2), color-mix(in srgb, var(--good) 45%, var(--surface-2)) 62%, color-mix(in srgb, var(--bad) 55%, var(--surface-2))); }
+.meter-mark { position: absolute; top: -6px; bottom: -6px; width: 3px; background: var(--ink); border-radius: 2px; }
+.meter-labels { position: relative; height: 18px; display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.meter-labels span { white-space: nowrap; }
+.meter-labels .mid { position: absolute; transform: translateX(-50%); }
+.voices { display: flex; flex-wrap: wrap; gap: 6px; }
+.voices span { font-size: 13.5px; background: var(--surface-2); border-radius: 6px; padding: 3px 8px; }
+.voices code { font-size: 12px; color: var(--muted); }
+
+/* honesty */
+.status { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+.status div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 6px; align-content: start; }
+.badge { justify-self: start; font: 500 12px var(--mono); letter-spacing: .05em; border-radius: 999px; padding: 2px 9px; border: 1px solid currentColor; }
+.b-good { color: var(--good); } .b-warn { color: var(--warn); } .b-demo { color: var(--clip-demo); }
+.codeblock { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font: 13.5px/1.6 var(--mono); margin: 0; }
+.codeblock .c { color: var(--muted); }
+
+/* output folder */
+.tree { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 7px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; font-size: 14.5px; }
+.tree code { font-size: 13.5px; font-weight: 500; }
+.tree .root { grid-column: 1 / -1; font-family: var(--mono); font-weight: 600; }
+@media (max-width: 520px) { .tree { grid-template-columns: minmax(0, 1fr); gap: 2px 0; } .tree span { padding-bottom: 8px; color: var(--muted); } }
+
+/* glossary */
+.gloss { display: grid; gap: 12px 28px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin: 0; }
+.gloss div { display: grid; gap: 2px; }
+.gloss dt { font-family: var(--display); font-weight: 700; font-size: 17px; }
+.gloss dd { margin: 0; color: var(--muted); font-size: 15px; }
+footer { color: var(--muted); font-size: 14px; }
+</style>
+
+<div class="page">
+  <aside class="toc" aria-label="On this page">
+    <nav>
+      <a href="#start">Before you start</a>
+      <a href="#builder">Build a sentence</a>
+      <a href="#words">What each word does</a>
+      <a href="#types">The three videos</a>
+      <a href="#tone">Tone</a>
+      <a href="#sound">Sound</a>
+      <a href="#honest">Honesty and privacy</a>
+      <a href="#output">What you get</a>
+      <a href="#changes">Changing a video</a>
+      <a href="#behind">Behind the scenes</a>
+      <a href="#glossary">Words used here</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header style="display:grid;gap:18px">
+      <p class="eyebrow">Claude Code skill · your version, 30-09-26</p>
+      <h1>Using /brag</h1>
+      <p class="lede">Type one sentence. /brag reads your project, plans a story, and makes one finished video. Every tool runs inside Docker, so nothing is installed on your Mac. There are no flags: you say what you want in normal words. It works for any app: a shop, a dashboard, a developer tool, an attack surface manager. The words, colours, logo and motion all come from the project in front of it.</p>
+      <p class="muted">The skill's source, its tests and this guide as a README are on GitHub: <a href="https://github.com/Am0stafa/brag-video">Am0stafa/brag-video</a>.</p>
+      <div class="prompts">
+        <div class="prompt-card demo">
+          <span class="kind">Product demo</span>
+          <p class="prompt">use /brag to make a product demo of this app, like an Apple keynote</p>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <div class="prompt-card feature">
+          <span class="kind">Feature brag</span>
+          <p class="prompt">use /brag to create a video about the change in this PR https://github.com/org/repo/pull/42 with voice over</p>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <div class="prompt-card ba">
+          <span class="kind">Before and after</span>
+          <p class="prompt">use /brag to make a before and after video of the new checkout page</p>
+          <button class="copy" type="button">Copy</button>
+        </div>
+      </div>
+    </header>
+
+    <section id="start">
+      <h2>Before you start</h2>
+      <ol class="steps">
+        <li><p><b>Open Docker Desktop.</b> /brag runs every tool inside Docker. If Docker is off, /brag stops and asks you to start it. That is the only question it will ask you.</p></li>
+        <li><p><b>Open Claude Code in your project folder</b>, the repository you want the video about. To make a video about a pull request, you can also just paste its link.</p></li>
+        <li><p><b>Type your sentence.</b> The tools image is already built on your Mac. If it is ever missing (for example after you delete it), /brag builds it again first: 5–10 minutes and about 1.3 GB to download. A video takes Claude about 40–70 minutes of work; the three test videos took 39, 45 and 68 minutes.</p></li>
+        <li><p><b>Watch it</b> with <code>open brag-output/brag.mp4</code>. Then listen to it: /brag checks the sound with measurements, but it cannot hear.</p></li>
+      </ol>
+    </section>
+
+    <section id="builder">
+      <h2>Build your sentence</h2>
+      <p class="muted">Pick what you want. The sentence below updates, and so does the plan /brag will follow. Copy the sentence into Claude Code.</p>
+      <form class="builder" id="builder-form" autocomplete="off">
+        <div class="field wide">
+          <span class="label" id="type-label">Which video?</span>
+          <div class="chips" role="radiogroup" aria-labelledby="type-label">
+            <input type="radio" name="b-type" id="bt-demo" value="demo" checked><label for="bt-demo">Product demo</label>
+            <input type="radio" name="b-type" id="bt-feature" value="feature"><label for="bt-feature">Feature brag</label>
+            <input type="radio" name="b-type" id="bt-ba" value="ba"><label for="bt-ba">Before and after</label>
+          </div>
+        </div>
+        <div class="fields">
+          <div class="field wide">
+            <label for="b-subject">About what?</label>
+            <input type="text" id="b-subject" value="this app">
+          </div>
+          <div class="field">
+            <label for="b-voice">Voice over?</label>
+            <select id="b-voice">
+              <option value="none">No, music and sound effects</option>
+              <option value="vo">Yes, a voice over</option>
+              <option value="male">Yes, a male voice</option>
+              <option value="british">Yes, a British voice</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="b-tone">Tone</label>
+            <select id="b-tone">
+              <option value="auto">Say nothing: launch (the default)</option>
+              <option value="polished">like an Apple keynote</option>
+              <option value="ai-demo">showing it thinking (dark keynote)</option>
+              <option value="app-store">with clean feature cards</option>
+              <option value="changelog">for the sprint review</option>
+              <option value="cinematic">like a movie trailer</option>
+              <option value="default">playful</option>
+              <option value="yc-parody">as a deadpan startup launch</option>
+              <option value="chaotic">fast and loud</option>
+              <option value="deadpan">dry and understated</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="b-length">Length</label>
+            <select id="b-length">
+              <option value="auto">The full video (the default)</option>
+              <option value="quick">A quick version (27–47 seconds)</option>
+              <option value="27">27 seconds</option>
+              <option value="30">30 seconds</option>
+              <option value="45">45 seconds</option>
+              <option value="60">60 seconds</option>
+              <option value="90">90 seconds</option>
+              <option value="117">117 seconds (the most)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="b-format">Shape</label>
+            <select id="b-format">
+              <option value="landscape">Landscape (YouTube, slides)</option>
+              <option value="vertical">Vertical (Reels, TikTok, Shorts)</option>
+              <option value="square">Square</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="b-audience">For whom?</label>
+            <select id="b-audience">
+              <option value="auto">Let /brag choose</option>
+              <option value="team">for the team</option>
+              <option value="linkedin">for LinkedIn</option>
+              <option value="customers">for customers</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="b-data">Data on screen</label>
+            <select id="b-data">
+              <option value="auto">Invented stand-ins for private data</option>
+              <option value="fake">All fake data</option>
+            </select>
+          </div>
+          <div class="field wide">
+            <label for="b-extra">Anything specific? (optional)</label>
+            <input type="text" id="b-extra" placeholder="for example: show the settings page, start with 1,200 orders today">
+          </div>
+        </div>
+        <div class="out" aria-live="polite">
+          <span class="eyebrow">Your sentence</span>
+          <p class="prompt" id="b-out"></p>
+          <button class="copy" type="button" data-target="b-out">Copy</button>
+          <dl class="plan" id="b-plan"></dl>
+        </div>
+      </form>
+    </section>
+
+    <section id="words">
+      <h2>What each word does</h2>
+      <p>/brag reads your sentence and looks for these things. Anything you don't say gets a sensible default, which /brag writes into its plan.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Setting</th><th>Say something like</th><th>If you say nothing</th></tr></thead>
+          <tbody>
+            <tr><td>Video type</td><td class="say">"product demo", "show every feature", "brag about this PR", "before and after"</td><td>A product demo, or a feature brag when you mention a PR, a branch or "the feature I added"</td></tr>
+            <tr><td>Subject</td><td class="say">"this app", a PR link, "PR #42", "the branch login-v2", "my last 3 commits", "the new export in src/export/"</td><td>The project in the current folder</td></tr>
+            <tr><td>Voice over</td><td class="say">"with voice over", "narrate it", "with a voice"</td><td>No voice. Music and sound effects carry the video.</td></tr>
+            <tr><td>Voice</td><td class="say">"a male voice", "a British voice", "in Spanish"</td><td>Heart, an American English female voice</td></tr>
+            <tr><td>Music</td><td class="say">"calm music", "epic music", "techy music", "no music"</td><td>On. A bundled track if it really fits the mood; otherwise music composed for this video.</td></tr>
+            <tr><td>Sound effects</td><td class="say">"no sound effects", "no typing sound", "make the typing quieter"</td><td>On. Bundled sounds first; new ones are made or found when nothing fits. With <code>launch</code>, a deep "key" sound on every typed piece.</td></tr>
+            <tr><td>Tone</td><td class="say">"like an Apple keynote", "like an AI launch video", "like a movie trailer", "for the sprint review"</td><td><code>launch</code>: statements that stream in, one word lit in colour, your product's icon opening the scenes (see Tone below)</td></tr>
+            <tr><td>Theme</td><td class="say">"dark", "light", "on white", "in our brand colours"</td><td>Your app's own look: its background, text colour and brand colour, light or dark</td></tr>
+            <tr><td>Motion</td><td class="say">"keep the logo still", "no animation on the charts"</td><td>Anything that naturally moves is animated without asking: a bird logo's wings, a radar's sweep, numbers counting up, charts drawing, a scan filling in</td></tr>
+            <tr><td>Length</td><td class="say">"quick", "a quick demo", "a quick version", "30 seconds", "under a minute"</td><td>The full video: everything, with the room it needs, never over 117 seconds. The quick words give a 27–47 second quick version that still shows every feature.</td></tr>
+            <tr><td>Shape</td><td class="say">"vertical for Reels", "for TikTok", "square"</td><td>Landscape, 1920 × 1080, 30 frames per second</td></tr>
+            <tr><td>Audience</td><td class="say">"for the team", "for LinkedIn", "for customers"</td><td>The team for features and before/after; the public for product demos</td></tr>
+            <tr><td>Data</td><td class="say">"with fake data", "use the real numbers"</td><td>Invented stand-ins for any customer or personal data</td></tr>
+            <tr><td>Anything specific</td><td class="say">"show the settings page", "mention Jira", "start with 1,200 orders today"</td><td>Nothing extra</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout"><b>Your words win.</b> If you ask for something, /brag does it, even when the code doesn't have it yet. It marks it "requested" in the plan and does not argue or add warnings.</p>
+      <p class="callout"><b>Everything is shown.</b> /brag lists every feature, screen and result it finds, plus everything you ask for, and the video shows all of it. A shorter video (the quick version, or a number you give) shows more in each scene. It never leaves something out.</p>
+    </section>
+
+    <section id="types">
+      <h2>The three videos</h2>
+      <p>Each video type has its own story. The bars below are drawn like clips on an editing timeline: the longer the clip, the longer the scene. The darker clip is the heart of the video.</p>
+      <p><b>How long.</b> By default you get the <b>full video</b>. /brag first lists everything (every feature, each result, the motion it found, everything you asked for) and gives it the room it needs, so nothing is rushed into a small video. It never goes over <b>117 seconds</b>. Extra time always means more of the product at the same pace, never slower scenes. When you know the video doesn't need to be long, say <b>"quick"</b> ("a quick demo", "a quick version"): you get 27–47 seconds that still show every feature, with the main flow in full and the rest in a quick run. A number in your sentence always wins, and it still covers everything. The bars below show examples.</p>
+      <div class="types">
+
+        <article class="type demo">
+          <div class="type-head"><h3>Product demo</h3><span class="len">usually 47–82 s · many features 82–117 s · quick 27–47 s</span></div>
+          <p class="answers">Answers: <b>what is this, and what can it do?</b> It is about the whole product, every feature of it.</p>
+          <div class="timeline" role="img" aria-label="A full product demo of eight features, about 60 seconds: hook, intro, one chapter per feature, outro">
+            <div class="track">
+              <div class="seg" style="--s:3"><b>Hook</b><span>0–3</span></div>
+              <div class="seg" style="--s:5"><b>Intro</b><span>3–8</span></div>
+              <div class="seg key" style="--s:6"><b>F1</b><span>8–14</span></div>
+              <div class="seg key" style="--s:6"><b>F2</b><span>14–20</span></div>
+              <div class="seg key" style="--s:6"><b>F3</b><span>20–26</span></div>
+              <div class="seg key" style="--s:6"><b>F4</b><span>26–32</span></div>
+              <div class="seg key" style="--s:6"><b>F5</b><span>32–38</span></div>
+              <div class="seg key" style="--s:6"><b>F6</b><span>38–44</span></div>
+              <div class="seg key" style="--s:6"><b>F7</b><span>44–50</span></div>
+              <div class="seg key" style="--s:6"><b>F8</b><span>50–56</span></div>
+              <div class="seg" style="--s:4"><b>Outro</b><span>56–60</span></div>
+            </div>
+            <div class="ruler"><span>0 s</span><span>full: every feature gets its own chapter</span><span>60 s</span></div>
+          </div>
+          <div class="timeline" role="img" aria-label="The quick version of the same eight features, 30 seconds: hook, what it is, the main flow in full, a quick run through the other seven features, outro">
+            <div class="track">
+              <div class="seg" style="--s:3"><b>Hook</b><span>0–3 s</span></div>
+              <div class="seg" style="--s:3"><b>What it is</b><span>3–6 s</span></div>
+              <div class="seg key" style="--s:9"><b>Main flow</b><span>6–15 s</span></div>
+              <div class="seg key" style="--s:11"><b>Quick run: F2–F8</b><span>15–26 s</span></div>
+              <div class="seg" style="--s:4"><b>Outro</b><span>26–30 s</span></div>
+            </div>
+            <div class="ruler"><span>0 s</span><span>quick: the same eight features, less depth</span><span>30 s</span></div>
+          </div>
+          <ul class="notes">
+            <li>Each feature is shown <b>in use</b>: typing, clicking, results arriving. It is not a slide of feature names.</li>
+            <li>Nothing is left out. With many features, related ones share a scene and small ones get a quick run of 1–2 seconds each, so the video stays under 117 seconds.</li>
+            <li>In the keynote-like tones, chapters get numbers ("03 / 08 · Reports") and a thin progress bar; in <code>launch</code>, the typed statements carry the thread.</li>
+          </ul>
+          <div class="examples-inline">
+            <div class="ex"><p class="prompt">use /brag to make a quick demo of this app</p><button class="copy" type="button">Copy</button></div>
+            <div class="ex"><p class="prompt">use /brag to make a product demo of this app with fake data</p><button class="copy" type="button">Copy</button></div>
+          </div>
+        </article>
+
+        <article class="type feature">
+          <div class="type-head"><h3>Feature brag</h3><span class="len">usually 42–82 s · quick 27–47 s</span></div>
+          <p class="answers">Answers: <b>what problem did this solve, and how is the product better?</b> It is about one new thing: a PR, a branch, "the feature I added".</p>
+          <div class="timeline" role="img" aria-label="A 45-second feature brag: the problem, life before, meet the feature, the feature at work, what got better, outro">
+            <div class="track">
+              <div class="seg" style="--s:5"><b>The problem</b><span>0–5 s</span></div>
+              <div class="seg" style="--s:8"><b>Life before</b><span>5–13 s</span></div>
+              <div class="seg" style="--s:3"><b>Meet it</b><span>13–16</span></div>
+              <div class="seg key" style="--s:18"><b>The feature at work</b><span>16–34 s</span></div>
+              <div class="seg" style="--s:7"><b>What got better</b><span>34–41 s</span></div>
+              <div class="seg" style="--s:4"><b>Outro</b><span>41–45</span></div>
+            </div>
+            <div class="ruler"><span>0 s</span><span>problem first, then the answer</span><span>45 s</span></div>
+          </div>
+          <ul class="notes">
+            <li>It starts with <b>the problem</b>, in the words of the person who had it: "Every refresh wiped your filters."</li>
+            <li>"Life before" is rebuilt from the <b>old code</b>, not imagined. The feature then appears in the same frame, so only the change moves.</li>
+            <li>It shows <b>everything the change does</b>: every use it adds, every screen it touches, every edge case it handles, and any small side change in the same PR.</li>
+            <li>If the PR is still open, the ending says <code>#42 · in review</code>. /brag never posts to GitHub; it gives you the command to do it yourself.</li>
+          </ul>
+          <div class="examples-inline">
+            <div class="ex"><p class="prompt">use /brag to create a video about the change in this PR https://github.com/org/repo/pull/42 with voice over</p><button class="copy" type="button">Copy</button></div>
+            <div class="ex"><p class="prompt">brag about the feature I added in this branch, for the team</p><button class="copy" type="button">Copy</button></div>
+          </div>
+        </article>
+
+        <article class="type ba">
+          <div class="type-head"><h3>Before and after</h3><span class="len">usually 32–62 s · quick 22–32 s</span></div>
+          <p class="answers">Answers: <b>what changed?</b> It is about an improvement to something that already existed: a redesign, a speed-up, a fix.</p>
+          <div class="timeline" role="img" aria-label="A 35-second before and after: hook, before, the switch, after in use, side by side, outro">
+            <div class="track">
+              <div class="seg" style="--s:3"><b>Hook</b><span>0–3</span></div>
+              <div class="seg" style="--s:6"><b>Before</b><span>3–9 s</span></div>
+              <div class="seg key" style="--s:1.8"><b>Switch</b><span>9–10</span></div>
+              <div class="seg" style="--s:12"><b>After, in use</b><span>10–22 s</span></div>
+              <div class="seg" style="--s:8"><b>Side by side</b><span>22–30 s</span></div>
+              <div class="seg" style="--s:5"><b>Outro</b><span>30–35</span></div>
+            </div>
+            <div class="ruler"><span>0 s</span><span>the switch is the whole video</span><span>35 s</span></div>
+          </div>
+          <ul class="notes">
+            <li><b>Same frame, same crop.</b> The old and the new look exactly alike except for the change.</li>
+            <li>Every place the change touched gets its own before and after (or one split screen that holds them all).</li>
+            <li>Numbers like "2× faster" appear only if they were measured, or if you gave them.</li>
+          </ul>
+          <div class="examples-inline">
+            <div class="ex"><p class="prompt">use /brag to make a before and after video of the mobile hero fix in commit 9b5a758</p><button class="copy" type="button">Copy</button></div>
+            <div class="ex"><p class="prompt">make a before and after video of the new settings page, vertical for Reels</p><button class="copy" type="button">Copy</button></div>
+          </div>
+        </article>
+      </div>
+      <p class="callout">You always get <b>one video</b>. /brag does not make extra cuts or other versions unless you ask. At the end it suggests them, for example a quick version of a full video, with the sentence to say.</p>
+    </section>
+
+    <section id="tone">
+      <h2>Tone: the personality of the video</h2>
+      <p>The same product can be shown calm and elegant, or loud and fast. That difference is the <b>tone</b>. You choose it with normal words, like "like an Apple keynote" or "like a movie trailer". The tone changes four things:</p>
+      <div class="four">
+        <div><b>Pace</b><span>how long each scene stays and how fast the cuts come</span></div>
+        <div><b>Words</b><span>how the lines on screen sound</span></div>
+        <div><b>Type</b><span>how the text looks: big or small, bold or light, capitals or not</span></div>
+        <div><b>Transitions</b><span>how one scene becomes the next: a soft fade, a slide, a hard cut</span></div>
+      </div>
+      <p><b>The default tone is <code>launch</code>.</b> It is built on how modern AI launch films write on screen, measured frame by frame from one, and made your product's own: big statements that stream in like a model's answer (the first word in small pieces, then whole words), the line gliding to stay centred, and one word lit in colour that flickers through a palette before it settles. Every typed piece lands with a short, deep "key" sound. Statements reset in a single frame. Where the story moves somewhere new, the line collapses into <b>your product's own icon</b> (or, when your app has no logo, a glowing orb in your brand colour that breathes on the beat of the music): it lands with a small bounce and one soft ring, then opens the next scene the way an app opens. The icon plays your logo's own motion as it lands (a horseshoe swings, wings beat, a radar sweeps), and the video closes with your product's name typing in beside it.</p>
+      <p><b>It takes your app's look.</b> White is only the starting point. A dark app gets dark statements with light text, and the lit word takes your brand colour. Every colour is adjusted automatically so it stays readable. If your app icon is a gradient, or draws its own rounded tile, the icon in the video keeps that exact look. Use the <b>Theme</b> buttons under the preview to compare, and <b>Play with sound</b> to hear the typing. Everything else below stays available when you ask for it.</p>
+      <p><b>Your product, in use.</b> Between the statements, /brag rebuilds your real screens and animates them: text types into fields, numbers count up, dialogs open, a cursor glides to a button and clicks, a finger taps a phone screen. A desktop app is laid out at its real size and filmed through a camera that zooms in and out, so its layout stays exactly yours. A big product with dozens of screens gets a <b>screen wall</b>: every screen that has no scene of its own, by its real title, in one camera glide that ends on all of them at once.</p>
+      <p>Try it: here is one fictional app, <b>Horse Tinder</b> (swipe to find a horse), shown in each of the ten tones. Click a tone.</p>
+      <div class="tone-tabs" id="tone-tabs" role="group" aria-label="Choose a tone"></div>
+      <div class="tone-grid">
+        <div class="monitor">
+          <div class="monitor-bar"><span id="tone-tc">00:00:00:00 · launch</span><button class="replay" type="button" id="tone-replay">Play again</button></div>
+          <div class="lt-ctl" id="lt-ctl" role="group" aria-label="Launch preview options">
+            <span class="lt-ctl-label">Theme</span>
+            <button type="button" data-lt-theme="light" aria-pressed="true">Light</button>
+            <button type="button" data-lt-theme="dark" aria-pressed="false">Dark</button>
+            <button type="button" data-lt-theme="app" aria-pressed="false">An app's own colours</button>
+            <button type="button" id="lt-sound" aria-pressed="false">Play with sound</button>
+          </div>
+          <div class="screen" id="tone-screen" aria-live="polite"></div>
+        </div>
+        <div class="sheet" id="tone-sheet"></div>
+      </div>
+      <p class="callout"><b>If you say nothing about tone:</b> every video type gets <code>launch</code>: a product demo, a feature brag and a before-and-after. Name another tone only when you want a different look, for example "like an Apple keynote" for <code>polished</code>, or "for the sprint review" for <code>changelog</code>.</p>
+    </section>
+
+    <section id="sound">
+      <h2>Sound</h2>
+      <div class="fork">
+        <p class="q">Did your sentence ask for a voice over?</p>
+        <div class="branch"><span class="ans">Yes</span><p>A narrator speaks the story. Quiet music plays under the voice and dips on every line, with only a few soft sound effects. The voice is made on your Mac, inside Docker, with no internet needed.</p></div>
+        <div class="branch"><span class="ans">No</span><p>Music and sound effects carry the video. /brag uses a bundled track only if it truly fits the mood. Otherwise it composes new music, timed so the big moments land on the beat. With <code>launch</code> it first checks that every statement stays on screen long enough to read, and only then writes the music to those final times, so the music is made once.</p></div>
+      </div>
+      <h3>Music /brag can make</h3>
+      <div class="styles">
+        <div class="style"><b>pulse</b><span>A steady electronic pulse with small "data" blips.</span><em>the default with launch (120–128 BPM); AI, developer, security and data tools</em></div>
+        <div class="style"><b>cinematic</b><span>Big pads, deep booms, a slow build.</span><em>trailers, big launches</em></div>
+        <div class="style"><b>warm</b><span>Bright plucks, a soft beat, claps.</span><em>friendly consumer apps</em></div>
+        <div class="style"><b>minimal</b><span>Soft pads that leave room for speech.</span><em>under a voice over</em></div>
+      </div>
+      <p class="muted">The bundled tracks are upbeat and business-like ("Happy Beats"). They fit playful demos. Their licence is not written down in the skill, so for company videos /brag prefers its own music.</p>
+      <h3>The typing sound</h3>
+      <p>With <code>launch</code>, every typed piece lands with a short, deep "key" hit: a click that drops fast from a high pitch to a low thump, gone in about 30 ms. It was measured from the reference film and rebuilt as an original sound, so nothing is copied. The pitch changes a little from hit to hit, the lit word's letters sound a bit higher, and fast letters are thinned so it never buzzes. /brag sets every hit about 8 dB above the music around it, then checks the finished video to prove each one is heard. Say "no typing sound" or "make the typing quieter" to change it. Try it with <b>Play with sound</b> in the Tone preview.</p>
+      <h3>Sound effects</h3>
+      <p><b>Bundled:</b> clicks, soft drops, impacts, typing. <b>Made new:</b> whoosh, riser, boom, impact, blip, tick, shimmer, wing beats, glitch. <b>Found:</b> real recordings (an animal, a crowd, the weather) from free public-domain libraries, cleaned up and listed in the credits. Things that move on their own get a soft matching sound: wing beats for a bird logo, a blip for each pass of a radar sweep.</p>
+      <p><b>Clicks, taps and typing in your screens</b> get their sounds from the animation itself: every click of the cursor and every tap is recorded with its time, and text typed into a field gets a soft keyboard sound on every second letter, never closer than 90 ms, so fast typing never buzzes. /brag then writes all the sound cues in one go, from a short list, measuring each sound's length and keeping overlapping sounds on separate tracks.</p>
+      <h3>How loud</h3>
+      <div class="meter" role="img" aria-label="Loudness scale: every finished video is set to minus 14 LUFS">
+        <div class="meter-scale"><div class="meter-mark" style="left:62%"></div></div>
+        <div class="meter-labels"><span>−30 quiet</span><span class="mid" style="left:34%">−20</span><span class="mid" style="left:62%"><b>−14</b></span><span>−8 loud</span></div>
+        <p>Every finished video is set to <b>−14 LUFS</b>, the loudness most platforms use. So your video is never much quieter or louder than the ones around it.</p>
+      </div>
+      <h3>Voices</h3>
+      <div class="voices">
+        <span>Heart <code>default, US</code></span><span>Nova <code>US</code></span><span>Sky <code>US</code></span><span>Michael <code>US male</code></span><span>Adam <code>US male</code></span>
+        <span>Emma <code>UK</code></span><span>Isabella <code>UK</code></span><span>George <code>UK male</code></span><span>Dora <code>Spanish</code></span><span>Siwis <code>French</code></span><span>Alpha <code>Japanese</code></span><span>Xiaobei <code>Mandarin</code></span>
+      </div>
+    </section>
+
+    <section id="honest">
+      <h2>Honest by default. Your words win.</h2>
+      <p>Every name, number and feature on screen gets a line in the plan's <b>claims list</b>, with where it came from. Each line has one of three labels:</p>
+      <div class="status">
+        <div><span class="badge b-good">grounded</span><p>Found in the code, the docs or the change.</p><p class="muted">"Filters now survive a reload." Source: <code>src/filters/store.ts</code></p></div>
+        <div><span class="badge b-warn">requested</span><p>You asked for it, so it goes in exactly as asked.</p><p class="muted">"1,200 orders today", because your sentence said so.</p></div>
+        <div><span class="badge b-demo">fake data</span><p>Sample names and numbers, used when you ask for fake data or to hide private data.</p><p class="muted">"Acme Health", "Northwind Bank"</p></div>
+      </div>
+      <p>Private things work the same way. While reading your project, /brag writes a file called <code>privacy-terms.txt</code>. Before rendering, it scans all the text in the video against that file.</p>
+<pre class="codeblock"><span class="c"># found in the project: must never appear on screen</span>
+deny: ops@realcustomer.com
+deny: 10.20.30.40
+<span class="c"># you asked for it: allowed</span>
+allow: Acme Health</pre>
+      <p>A <code>deny</code> hit must be fixed before the video is rendered. An <code>allow</code> line is fine. So the check stops leaks <i>you</i> didn't ask for, and never blocks what you did ask for.</p>
+      <p>Names are matched as whole words: a customer called "Tines" is found in "Tines," but not inside "routines". The scan also flags anything that looks like an email, a key or a network address, and it no longer mistakes the numbers in an icon's drawing (<code>7.178.07.207</code>) or a version number for an address.</p>
+    </section>
+
+    <section id="output">
+      <h2>What you get</h2>
+      <p>Everything lands in one folder in your project: <code>brag-output/</code>. If that folder already exists, the new one gets the subject in its name, for example <code>brag-output-pr-42/</code>.</p>
+      <div class="tree">
+        <span class="root">brag-output/</span>
+        <code>brag.mp4</code><span>The video. Its first frame is the poster, so every app shows a good thumbnail.</span>
+        <code>brag.jpg</code><span>The poster image on its own.</span>
+        <code>share-copy.txt</code><span>One caption, ready to post.</span>
+        <code>brag-plan.md</code><span>The plan: the story, every scene with its timing, and the claims list.</span>
+        <code>composition-brief.md</code><span>The build instructions for the video engine.</span>
+        <code>change-context.md</code><span>For a feature or a before-and-after: the problem, the before and the after.</span>
+        <code>privacy-terms.txt</code><span>What must never appear, and what you allowed.</span>
+        <code>credits.md</code><span>Every sound, song and font that is not original, with its licence.</span>
+        <code>composition/</code><span>The video's source, built as a web page. Change it and render again.</span>
+        <code>tools/</code><span>Music plans, voice scripts, the list of sound effects, the log of every typed piece and click, and the last check report: everything needed to rebuild the sound and review the build.</span>
+        <code>review/</code><span>Contact sheets: many small frames on one image, used to check the video.</span>
+        <code>versions/</code><span>Older versions, kept when you change a video.</span>
+      </div>
+      <p class="callout"><b>Kept out of Git.</b> The folder is often over 100 MB, because the music and typing tracks are uncompressed. When your project is a Git repository, /brag adds one line, <code>brag-output*/</code>, to the repository's local exclude file (<code>.git/info/exclude</code>). Git reads that file only on your machine and never commits it, so the folder stays out of <code>git status</code> and out of every commit, and your <code>.gitignore</code> is not touched. To undo it, delete that line.</p>
+      <h3>In the chat, at the end</h3>
+      <p>/brag tells you where the video is, what it claims, what it animated on its own (so you can say "keep the logo still" next time), and, in a Git repository, that it kept the output folder out of Git. It ends with <b>"Want another version?"</b>: three to five ideas picked for this video, each with the sentence to say. It only suggests them; it never makes extra versions unless you ask. For example:</p>
+      <div class="tryout">
+        <p class="q">Want another version?</p>
+        <ul>
+          <li>Vertical for Reels? Say: <code>make it vertical for Reels</code></li>
+          <li>The light version of your dark app? Say: <code>try the light version</code></li>
+          <li>Calmer, like a keynote? Say: <code>try it like an Apple keynote</code></li>
+          <li>With a narrator? Say: <code>add a voice over</code></li>
+          <li>A 30-second cut for a feed? Say: <code>make a quick version</code></li>
+        </ul>
+      </div>
+      <p>If it noticed real problems in your product while rebuilding the screens (a label that overflows, text that is hard to read, a typo), it lists them too, with the file. It never invents any.</p>
+    </section>
+
+    <section id="changes">
+      <h2>Changing a video</h2>
+      <p>Ask for the change in the same project. /brag keeps the old video in <code>versions/v1/</code>, makes the change, and writes down what changed and why.</p>
+      <div class="examples-inline">
+        <div class="ex"><p class="prompt">change the music to something calmer</p><button class="copy" type="button">Copy</button></div>
+        <div class="ex"><p class="prompt">make the ending shorter and use a British male voice</p><button class="copy" type="button">Copy</button></div>
+        <div class="ex"><p class="prompt">make the same video vertical for Reels</p><button class="copy" type="button">Copy</button></div>
+        <div class="ex"><p class="prompt">show the settings screen in chapter 3</p><button class="copy" type="button">Copy</button></div>
+      </div>
+    </section>
+
+    <section id="behind">
+      <h2>Behind the scenes</h2>
+      <p>All the tools live in one Docker image, <code>brag-tools:0.8.91-r3</code> (3.7 GB). It holds Hyperframes (the engine that turns a web page into video), Chrome to render, FFmpeg for audio and video, Python for the music and checks, the Kokoro voice, the animation library and blank video templates. On your Mac, /brag only uses <code>docker</code>, <code>git</code>, <code>gh</code>, <code>curl</code>, <code>open</code> and file tools. It never runs Python or Node there, and any helper it starts to read a big project gets the same rule, written into its instructions.</p>
+      <p>The Hyperframes guides it reads are copied to <code>~/.cache/brag</code> (5 MB).</p>
+      <h3>How /brag checks its own work</h3>
+      <ul class="notes">
+        <li><b>Reading time, before the music.</b> As soon as the statements are built, a table lists each one with its start, when its last word lands, when it leaves, and whether it can be read: about 0.3 s per word, and at least 1.2 s after the last word. Every row must say <code>ok</code> before the music is composed.</li>
+        <li><b>The layout check, summarized.</b> Hyperframes' <code>check</code> looks for text that overlaps, overflows or is hidden. Its full report is long, so /brag reads a summary grouped by kind, severity and moment. Transitions leave their two scenes out of the check while they cross, so planned cross-overs no longer bury the real problems.</li>
+        <li><b>Screens that animate the same way every time.</b> The kit that animates your screens computes every frame from the time alone, because frames are rendered out of order. It was tested by drawing the same video forward, backward and in a shuffled order: every visible element matched.</li>
+        <li><b>Frames and sound, measured.</b> Contact sheets of every key moment, loudness and peaks measured on the final file, and a check that every typing hit is heard.</li>
+      </ul>
+      <h3>Changes on 30-09-26</h3>
+      <p class="muted">From a 114-second demo of a large product, and the problems that run met:</p>
+      <ul class="notes">
+        <li>A kit for animating product screens: a scene clock for typed text and counters, appearances that start hidden, a cursor that measures its targets from the layout, phone taps, "…" labels cut the way the product cuts them, a "Sample data" label that stays in the corner, the screen wall, and quieting the page behind an open dialog.</li>
+        <li>The reading-time table, run before the music is composed.</li>
+        <li>A statement that stays on screen (<code>exit: "none"</code>) now gives way to the next statement on its stage.</li>
+        <li>The product's icon accepts a gradient tile, or a full app icon that draws its own tile.</li>
+        <li>Focus pulls, app opens, circle reveals and warps no longer fill the layout check with warnings (one run had 40 from focus pulls alone).</li>
+        <li>Scenes, cameras and transitions look right even when frames are drawn in reverse order; before, a scene could keep the blur of a later transition.</li>
+        <li>Fixes to the privacy scan (whole-word names, no false addresses), the music report (a drop is compared with the section before its build), and font downloads (a variable font becomes one file and one rule).</li>
+        <li>New helpers: a summary of the check report, and the sound-effect tags written from a list.</li>
+        <li>The output folder is kept out of Git with a local exclude line.</li>
+      </ul>
+      <h3>Free the space later</h3>
+      <div class="examples-inline">
+        <div class="ex"><p class="prompt">docker rmi brag-tools:0.8.91-r3</p><button class="copy" type="button">Copy</button></div>
+        <div class="ex"><p class="prompt">rm -rf ~/.cache/brag</p><button class="copy" type="button">Copy</button></div>
+      </div>
+      <p class="muted">The next /brag run rebuilds both, which takes 5–10 minutes.</p>
+      <h3>Go back to the original skill</h3>
+      <p>Your clone <code>~/Developer/repos/brag</code> holds the original, untouched skill:</p>
+      <div class="examples-inline">
+        <div class="ex"><p class="prompt">rm -rf ~/.claude/skills/brag && cp -Rp ~/Developer/repos/brag/skills/brag ~/.claude/skills/brag && cp -Rp ~/Developer/repos/brag/skills/brag-slim ~/.claude/skills/brag-slim</p><button class="copy" type="button">Copy</button></div>
+      </div>
+      <p class="muted">This deletes your improved version, so copy it somewhere first if you want to keep it.</p>
+    </section>
+
+    <section id="glossary">
+      <h2>Words used here</h2>
+      <dl class="gloss">
+        <div><dt>Hook</dt><dd>The first 2–3 seconds. Their job is to make people keep watching.</dd></div>
+        <div><dt>Outro</dt><dd>The last few seconds: the logo and a final line.</dd></div>
+        <div><dt>Lockup</dt><dd>The logo and the product name placed together, at rest.</dd></div>
+        <div><dt>Poster (frame 0)</dt><dd>The still image people see before the video plays. /brag makes it the very first frame.</dd></div>
+        <div><dt>Beat, BPM</dt><dd>The music's pulse, counted in beats per minute. At 120 BPM a beat lasts half a second, and cuts land on beats.</dd></div>
+        <div><dt>Drop, hit</dt><dd>A strong moment in the music where something big happens on screen.</dd></div>
+        <div><dt>Voice over</dt><dd>A narrator's voice playing over the pictures.</dd></div>
+        <div><dt>LUFS</dt><dd>How loud something sounds to people. −14 is the level most platforms use.</dd></div>
+        <div><dt>Contact sheet</dt><dd>Many small frames on one image, to spot visual problems quickly.</dd></div>
+        <div><dt>Claims list</dt><dd>The table in the plan of every fact on screen and where it came from.</dd></div>
+        <div><dt>Composition</dt><dd>The web page (HTML) that Hyperframes turns into the video.</dd></div>
+        <div><dt>Render</dt><dd>Turning the composition into the final MP4 file.</dd></div>
+        <div><dt>Hyperframes</dt><dd>The open-source tool that records a web page, frame by frame, as a video.</dd></div>
+        <div><dt>Docker image</dt><dd>A sealed box with all the tools inside, so nothing is installed on your Mac.</dd></div>
+        <div><dt>PR, merge base</dt><dd>A pull request is a proposed code change. The merge base is the code just before it: the "before".</dd></div>
+        <div><dt>Revision</dt><dd>A new version of an existing video. The old one is kept in <code>versions/</code>.</dd></div>
+        <div><dt>Reading time</dt><dd>How long a line must stay on screen to be read: about 0.3 s per word, and at least 1.2 s after its last word appears.</dd></div>
+        <div><dt>Screen wall</dt><dd>A grid of a big product's screens, each with its real title, that the camera glides across in a few seconds.</dd></div>
+        <div><dt>Layout check</dt><dd>Hyperframes' <code>check</code>: it looks for text that overlaps, overflows the frame or is hidden under something.</dd></div>
+      </dl>
+    </section>
+
+    <footer>
+      <p>This page describes your installed /brag skill as of 30-09-26: Hyperframes 0.8.91 in the image <code>brag-tools:0.8.91-r3</code>.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- copy buttons ---------- */
+  function selectNode(node) {
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (e) { /* nothing else to do */ }
+  }
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.copy');
+    if (!btn) return;
+    e.preventDefault();
+    const node = btn.dataset.target ? document.getElementById(btn.dataset.target) : btn.parentElement.querySelector('.prompt');
+    if (!node) return;
+    const text = node.textContent.trim();
+    const label = btn.dataset.label || btn.textContent;
+    btn.dataset.label = label;
+    const show = (msg) => { btn.textContent = msg; setTimeout(() => { btn.textContent = label; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => show('Copied')).catch(() => { selectNode(node); show('Selected: press ⌘C'); });
+    } else {
+      selectNode(node);
+      show('Selected: press ⌘C');
+    }
+  });
+
+  /* ---------- sentence builder ---------- */
+  const SUBJECT_DEFAULT = {
+    demo: 'this app',
+    feature: 'the change in this PR https://github.com/org/repo/pull/42',
+    ba: 'the new checkout page'
+  };
+  const TONE_PHRASE = {
+    polished: 'like an Apple keynote', 'ai-demo': 'showing it thinking, as a dark keynote', 'app-store': 'with clean feature cards',
+    changelog: 'for the sprint review', cinematic: 'like a movie trailer', default: 'playful',
+    'yc-parody': 'as a deadpan startup launch', chaotic: 'fast and loud', deadpan: 'dry and understated'
+  };
+  let subjectTouched = false;
+  const subject = $('#b-subject');
+  subject.addEventListener('input', () => { subjectTouched = true; });
+
+  function val(id) { return document.getElementById(id).value; }
+  function type() { const c = $('input[name="b-type"]:checked'); return c ? c.value : 'demo'; }
+
+  function build() {
+    const t = type();
+    if (!subjectTouched) subject.value = SUBJECT_DEFAULT[t];
+    const subj = subject.value.trim() || SUBJECT_DEFAULT[t];
+    const len = val('b-length');
+    const lenAdj = len === 'auto' ? '' : (len === 'quick' ? 'quick ' : len + '-second ');
+    let main;
+    if (t === 'demo') main = 'make a ' + lenAdj + 'product demo of ' + subj;
+    else if (t === 'feature') main = 'create a ' + lenAdj + 'video about ' + subj;
+    else main = 'make a ' + lenAdj + 'before and after video of ' + subj;
+
+    const parts = [main];
+    const tone = val('b-tone');
+    if (tone !== 'auto') parts.push(TONE_PHRASE[tone]);
+    const voice = val('b-voice');
+    if (voice === 'vo') parts.push('with voice over');
+    if (voice === 'male') parts.push('with a male voice over');
+    if (voice === 'british') parts.push('with a British voice over');
+    const aud = val('b-audience');
+    if (aud === 'team') parts.push('for the team');
+    if (aud === 'linkedin') parts.push('for LinkedIn');
+    if (aud === 'customers') parts.push('for customers');
+    const fmt = val('b-format');
+    if (fmt === 'vertical') parts.push('vertical for Reels');
+    if (fmt === 'square') parts.push('square');
+    if (val('b-data') === 'fake') parts.push('with fake data');
+    let sentence = 'use /brag to ' + parts.join(', ') + '.';
+    const extra = $('#b-extra').value.trim().replace(/[.\s]+$/, '');
+    if (extra) sentence += ' Also ' + extra + '.';
+    $('#b-out').textContent = sentence;
+
+    const typeName = { demo: 'Product demo: every feature, each one in use',
+      feature: 'Feature brag: the problem first, then everything the feature does', ba: 'Before and after: same frame, then the switch, for every place that changed' }[t];
+    const reads = { demo: 'The whole project: pages, copy, colours, fonts, every feature and flow',
+      feature: 'The change first (the PR, branch or commit), then the screens around it',
+      ba: 'The old and the new code of the change, then the screens around it' }[t];
+    const lenText = len === 'quick'
+      ? 'The quick version, ' + (t === 'ba' ? '22–32 seconds' : '27–47 seconds') + ': still everything, the main flow in full and the rest in a quick run'
+      : len !== 'auto' ? len + ' seconds, still covering everything (more in each scene)'
+      : 'The full video: everything, never over 117 seconds (usually ' +
+        ({ demo: '47–82, or 82–117 with many features', feature: '42–82', ba: '32–62' }[t]) + ')';
+    const toneText = tone !== 'auto' ? tone : 'launch (the default for every video type)';
+    const voiceName = { none: '', vo: 'Heart (US English)', male: 'Michael (US English, male)', british: 'Emma (British English)' }[voice];
+    const soundText = voice === 'none'
+      ? 'Music and sound effects: a bundled track only if it fits, otherwise music composed for this video'
+      : 'Voice over by ' + voiceName + ', with quiet music underneath and a few soft effects';
+    const size = { landscape: '1920 × 1080', vertical: '1080 × 1920', square: '1080 × 1080' }[fmt];
+    const rows = [
+      ['Video', typeName], ['Reads first', reads], ['Length', lenText], ['Tone', toneText],
+      ['Look', "Your app's own theme (light or dark), with your brand colour for the lit word"],
+      ['Motion', 'Anything that naturally moves is animated without asking (the logo, numbers, charts, scans)'],
+      ['Sound', soundText + (tone === 'auto' ? ', plus the deep typing sound' : '')], ['Shape', size + ', 30 frames per second'],
+      ['Data', val('b-data') === 'fake' ? 'All fake, marked "requested"' : 'Real product copy, invented stand-ins for private data'],
+      ['Saved in', 'brag-output/ (or brag-output-<subject>/ if taken), kept out of Git']
+    ];
+    const plan = $('#b-plan');
+    plan.innerHTML = '';
+    rows.forEach(([k, v]) => {
+      const dt = document.createElement('dt'); dt.textContent = k;
+      const dd = document.createElement('dd'); dd.textContent = v;
+      plan.append(dt, dd);
+    });
+  }
+  $('#builder-form').addEventListener('input', build);
+  $('#builder-form').addEventListener('change', build);
+  $('#builder-form').addEventListener('submit', (e) => e.preventDefault());
+  build();
+
+  /* ---------- tone preview ---------- */
+  const TONES = [
+    { id: 'launch', feel: 'Crisp and confident; the words do the work', pace: 'A new statement every 2.5–4 s: the first word streams in pieces, then words land about 0.14 s apart, then it holds', words: 'Short, plain statements; one key word lit in the brand colour', type: 'Big semibold statements in the app\'s own theme (dark text on light, or light on dark); lines left-aligned in a centred block', trans: 'One-frame resets between statements; where the story moves: your product\'s icon opening the next scene like an app, a warp out, a focus pull, a camera deep zoom; it closes on the icon beside the product\'s name',
+      sound: 'A short, deep "key" hit on every typed piece, plus energetic electronic music',
+      say: ['nothing: it is the default', 'launch style', 'like an AI launch video'], best: 'Every video type. It is what you get when you say nothing about tone.', ex: 'use /brag to make a product demo of this app',
+      cls: 't-launch', launch: true },
+    { id: 'polished', feel: 'Serious, elegant, calm', pace: '3–5 scenes, long holds', words: 'Short, confident lines from the product\'s own copy', type: 'Light to medium weight, lots of space', trans: 'Soft dissolves, slow push-ins',
+      say: ['like an Apple keynote', 'premium', 'serious', 'elegant'], best: 'Products that are not jokes, when you want a calm, premium keynote.', ex: 'use /brag to make a product demo of this app, like an Apple keynote',
+      cls: 't-polished', html: '<div class="s-inner"><span class="eb anim-fade">HORSE TINDER</span><span class="hl anim-soft delay-1">Find the horse that fits.</span><span class="sub anim-fade delay-3">Stable Match, on every profile card.</span></div>' },
+    { id: 'ai-demo', feel: 'Calm keynote pacing; the product thinks on screen', pace: 'Chapters of 4–7 s, slow push-ins', words: 'Sentence case, declarative, no superlatives', type: 'Large, light display type; small spaced labels', trans: 'Soft dissolves',
+      say: ['showing it thinking', 'dark keynote', 'like an agent demo'], best: 'AI and agent products, when you want a dark keynote: a typed prompt, then "thinking", then an answer with its sources.', ex: 'use /brag to make a product demo of the agent, showing it thinking, as a dark keynote',
+      cls: 't-ai', typing: 'Which horse fits my weekend rides?' },
+    { id: 'app-store', feel: 'Clean, professional, feature-forward', pace: '4–6 scenes, one feature card each', words: 'Feature name, then one line of benefit', type: 'Title case, medium weight, tidy', trans: 'Clean slides and wipes',
+      say: ['with clean feature cards', 'like an app store video'], best: 'A product demo with many features.', ex: 'use /brag to make a product demo of this app with clean feature cards',
+      cls: 't-app', html: '<div class="s-inner"><div class="card anim-slide"><div class="ring"><span>92%</span></div><div><div class="ct">Stable Match</div><div class="cs">See the fit before you swipe.</div></div></div></div>' },
+    { id: 'changelog', feel: 'Plain, informative, benefit-first', pace: '4–6 scenes; the feature at work gets the most time', words: '"You can now…", no engineering words', type: 'Mixed case, medium weight; the cut carries the emphasis', trans: 'Clean slides, one hard cut at before → after',
+      say: ['for the sprint review', 'changelog style', 'keep it plain'], best: 'A plain team update: feature brags and before-and-afters for a sprint review. ("for the team" alone sets the audience, not this tone.)', ex: 'brag about the feature I added in this branch, for the sprint review',
+      cls: 't-change', twoStep: true },
+    { id: 'cinematic', feel: 'Dramatic, trailer-scale', pace: '4–5 scenes, big moments, dark pauses', words: 'Epic claims, short lines', type: 'Huge capitals, wide letter spacing', trans: 'Dramatic wipes, slow zooms',
+      say: ['like a movie trailer', 'epic', 'dramatic'], best: 'Big launches, or anything with a grand feeling.', ex: 'use /brag to make a 25-second cinematic product demo of this app, like a movie trailer',
+      cls: 't-cine', html: '<div class="s-inner"><span class="small anim-slow">IN A WORLD OF A THOUSAND HORSES</span><span class="big anim-zoom delay-2">ONE WILL FIT.</span></div>' },
+    { id: 'default', feel: 'Playful, clean, easy to share', pace: '4–5 scenes, comfortable', words: 'Light and friendly', type: 'Bold, rounded, big', trans: 'Crossfades and bouncy entrances',
+      say: ['playful', 'fun'], best: 'A fun product demo.', ex: 'use /brag to make a playful product demo of this app',
+      cls: 't-default', html: '<div class="s-inner"><span class="hl anim-bounce">Swipe right on<br>your next horse.</span><span class="pill anim-fade delay-2">Horse Tinder</span></div>' },
+    { id: 'yc-parody', feel: 'A startup launch, played completely straight', pace: '4–5 scenes, one claim each', words: 'Corporate and very serious about something absurd', type: 'Clean corporate sans, small and tidy', trans: 'Hard cuts',
+      say: ['as a deadpan startup launch', 'like a pitch'], best: 'Absurd side projects.', ex: 'use /brag to make a product demo of this app as a deadpan startup launch',
+      cls: 't-yc', html: '<div class="s-inner"><span class="logo">horse tinder</span><span class="hl">We are building the operating system for horse compatibility.</span><span class="sub">Backed by people who own horses.</span></div>' },
+    { id: 'chaotic', feel: 'Fast, loud, all capitals', pace: '6–8 scenes, some under 2 s', words: 'Shouting, on purpose', type: 'Huge, heavy, tilted', trans: 'Hard cuts, flashes, zooms',
+      say: ['fast and loud', 'chaotic', 'crazy energy'], best: 'Only when you ask for chaos.', ex: 'use /brag to make a fast and loud product demo of this app',
+      cls: 't-chaos', html: '<div class="s-inner anim-shake"><span class="w">Swipe!</span><span class="w">Match!</span><span class="w">Neigh!</span></div>' },
+    { id: 'deadpan', feel: 'Dry; nothing is a joke', pace: '3–4 scenes, long holds, big empty space', words: 'Flat statements, one at a time', type: 'Small, plain, lots of space', trans: 'Slow fades',
+      say: ['dry and understated', 'deadpan'], best: 'Understated humor.', ex: 'use /brag to make a dry and understated product demo of this app',
+      cls: 't-dead', html: '<div class="s-inner"><span class="l1 anim-slow">This is an app. For horses.</span><span class="l2 anim-slow delay-3">That is all.</span></div>' }
+  ];
+  const tabs = $('#tone-tabs');
+  const screen = $('#tone-screen');
+  const sheet = $('#tone-sheet');
+  const tc = $('#tone-tc');
+  let timers = [];
+  let raf = 0;
+  let current = 'launch';
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); if (typeof stopSound === 'function') stopSound(); }
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+  function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  /* launch: the same timing as the skill's engine (assets/launch/launch-text.js).
+     The first word streams in token pieces, then whole words land 4, 4, 5 frames apart; a
+     {key} word is typed 2 frames a letter and flickers through the palette for 1 s before it
+     settles on the accent; the block glides to stay centred. Themes follow the app. The close
+     is the product's own mark: the line collapses into its icon, which lands with a small
+     bounce and one ring, swings like the horseshoe it shows, then slides left while the
+     name types in beside it. */
+  const LT_FRAME = 1000 / 30;
+  const LT_THEMES = {
+    light: { bg: '#fdfdfd', ink: '#000000', text: ['#0a84f9', '#e8691a', '#9d7bf0', '#e6608f', '#07a64b'], tile: '#4f8cff', glyph: '#ffffff' },
+    dark: { bg: '#000000', ink: '#ffffff', text: ['#0a84f9', '#f67824', '#cbaef9', '#fbc4c5', '#08b450'], tile: '#4f8cff', glyph: '#ffffff' },
+    app: { bg: '#0b1020', ink: '#e6ecf5', text: ['#22d3ee', '#f67824', '#cbaef9', '#fbc4c5', '#08b450'], tile: '#22d3ee', glyph: '#0b1020' }
+  };
+  let ltTheme = 'light';
+  let soundOn = false;
+  const LT_NAME = 'Horse Tinder';
+  const LT_SCRIPT = [
+    { lines: ['Horse Tinder for {Riders}'], hold: 1200 },
+    { lines: ['Find the horse that fits', 'your weekends and your pace'], hold: 1500 },
+    { lines: ['Swipe right on your next {ride}'], hold: 900, lockup: true }
+  ];
+  // Horse Tinder's logo, a horseshoe, drawn for its tile (the nail holes take the tile colour)
+  function horseshoe(th) {
+    return '<svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M30.3 21.8A32 32 0 1 0 69.7 21.8" stroke="' + th.glyph +
+      '" stroke-width="16" stroke-linecap="round"/><g fill="' + th.tile + '"><circle cx="21" cy="33.5" r="2.6"/><circle cx="19.1" cy="55.3" r="2.6"/>' +
+      '<circle cx="31.6" cy="73.2" r="2.6"/><circle cx="79" cy="33.5" r="2.6"/><circle cx="80.9" cy="55.3" r="2.6"/><circle cx="68.4" cy="73.2" r="2.6"/></g></svg>';
+  }
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+  const easeBack = (p) => { const c = 1.70158, q = p - 1; return 1 + (c + 1) * q * q * q + c * q * q; };
+  const elasticOut = (p) => (p <= 0 ? 0 : p >= 1 ? 1 : Math.pow(2, -10 * p) * Math.sin((p - 0.0875) * 2 * Math.PI / 0.35) + 1);
+
+  // token-sized pieces for a statement's first word: "Powered" -> "Po", "wer", "ed"
+  function pieces(word) {
+    const n = word.length;
+    if (n < 5) return [word];
+    const sizes = n <= 6 ? [2] : n <= 9 ? [2, 3] : [3, 3];
+    const out = []; let i = 0;
+    sizes.forEach((s) => { if (n - i - s >= 2) { out.push(word.slice(i, i + s)); i += s; } });
+    out.push(word.slice(i));
+    return out;
+  }
+
+  function launchPlan() {
+    let t = 150, beat = 0;
+    const next = () => [4, 4, 5][beat++ % 3] * LT_FRAME;
+    const events = [];
+    const plan = LT_SCRIPT.map((s) => {
+      const st = { at: t, lines: [], lockup: !!s.lockup };
+      let landed = t, first = true;
+      s.lines.forEach((line) => {
+        const words = [];
+        line.replace(/\{([^}]*)\}|(\S+)/g, (m, key, word) => {
+          const w = { w: key || word, key: !!key, born: t };
+          if (key) {
+            const n = key.replace(/ /g, '').length;
+            for (let i = 0; i < n; i++) events.push({ t: t + i * 2 * LT_FRAME, kind: i ? 'letter' : 'word' });
+            landed = t + (n - 1) * 2 * LT_FRAME;
+            t += n * 2 * LT_FRAME - 2 * LT_FRAME + next();
+          } else if (first && pieces(word).length > 1) {
+            let acc = '', tt = t;
+            w.parts = [];
+            pieces(word).forEach((p, i, arr) => {
+              acc += p;
+              w.parts.push({ text: acc, at: tt });
+              events.push({ t: tt, kind: 'piece' });
+              if (i < arr.length - 1) tt += (i === 0 ? 2 : 3) * LT_FRAME;
+            });
+            landed = tt;
+            t = tt + next();
+          } else {
+            events.push({ t, kind: 'word' });
+            landed = t;
+            t += next();
+          }
+          first = false;
+          words.push(w);
+          return m;
+        });
+        st.lines.push(words);
+      });
+      st.exit = landed + s.hold;
+      if (st.lockup) {
+        // the engine's "lockup": collapse 0.2 s, the icon lands in 0.35 s and holds 0.45 s,
+        // then slides left in 0.35 s while the name's words land beside it
+        st.markAt = st.exit + 200;
+        st.lockAt = st.markAt + 350 + 450;
+        events.push({ t: st.markAt, kind: 'pop' });
+        st.nameT = [];
+        let nt = st.lockAt + 300;
+        LT_NAME.split(' ').forEach((w, i) => { st.nameT.push(nt); events.push({ t: nt, kind: 'word' }); nt += [4, 4, 5][i % 3] * LT_FRAME; });
+        st.end = st.nameT[st.nameT.length - 1] + 1600;
+      } else st.end = st.exit;
+      t = st.end + LT_FRAME; // a one-frame reset before the next statement
+      return st;
+    });
+    return { plan, events };
+  }
+
+  /* the deep key: the same recipe as the skill's typing_track.py, played by the browser */
+  let actx = null, master = null, noise = null, live = [];
+  function audioReady() {
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      actx = new AC();
+      master = actx.createGain();
+      master.gain.value = 0.5;
+      master.connect(actx.destination);
+      noise = actx.createBuffer(1, Math.round(actx.sampleRate * 0.12), actx.sampleRate);
+      const d = noise.getChannelData(0);
+      let s = 12345;
+      for (let i = 0; i < d.length; i++) { s = (Math.imul(s, 1103515245) + 12345) >>> 0; d[i] = s / 2147483648 - 1; }
+    }
+    if (actx.state === 'suspended') actx.resume();
+    return true;
+  }
+  function keyHit(when, ratio, gainDb) {
+    const out = actx.createGain();
+    out.gain.value = Math.pow(10, gainDb / 20);
+    out.connect(master);
+    const short = 1 / Math.sqrt(ratio);
+    const body = actx.createOscillator(), bodyGain = actx.createGain();
+    body.frequency.setValueAtTime(1521 * ratio, when);
+    body.frequency.setTargetAtTime(75.4 * ratio, when, 0.0039);
+    bodyGain.gain.setValueAtTime(0, when);
+    bodyGain.gain.linearRampToValueAtTime(1, when + 0.0017);
+    bodyGain.gain.setTargetAtTime(0, when + 0.0017, 0.0056 * short);
+    body.connect(bodyGain).connect(out);
+    const sub = actx.createOscillator(), subGain = actx.createGain();
+    sub.frequency.value = 58.5 * ratio;
+    subGain.gain.setValueAtTime(0, when);
+    subGain.gain.linearRampToValueAtTime(0.2, when + 0.0017);
+    subGain.gain.setTargetAtTime(0, when + 0.0017, 0.006 * short);
+    sub.connect(subGain).connect(out);
+    const knock = actx.createBufferSource(), band = actx.createBiquadFilter(), knockGain = actx.createGain();
+    knock.buffer = noise;
+    band.type = 'bandpass'; band.frequency.value = 421 * ratio; band.Q.value = 0.8;
+    knockGain.gain.setValueAtTime(1.08, when);
+    knockGain.gain.setTargetAtTime(0, when, 0.0074 * short);
+    knock.connect(band).connect(knockGain).connect(out);
+    [body, sub, knock].forEach((n) => { n.start(when); n.stop(when + 0.12); live.push(n); });
+  }
+  function stopSound() { live.forEach((n) => { try { n.stop(); } catch (e) { /* already stopped */ } }); live = []; }
+  function scheduleTyping(events) {
+    if (!soundOn || !audioReady()) return;
+    const base = actx.currentTime + 0.02;
+    const steps = { word: [1.0, 0.9, 1.06, 0.95], piece: [1.0, 1.08], letter: [1.3, 1.4, 1.5], pop: [1.8] };
+    const gains = { word: 0, piece: -1, letter: -4, pop: -8 };
+    const turn = {};
+    let lastHit = -1;
+    events.forEach((e) => {
+      // pieces and letters stay at least 90 ms apart, like the skill's track
+      if (e.kind !== 'word' && e.t - lastHit < 90) return;
+      const j = turn[e.kind] || 0;
+      turn[e.kind] = j + 1;
+      keyHit(base + e.t / 1000, steps[e.kind][j % steps[e.kind].length], gains[e.kind]);
+      lastHit = e.t;
+    });
+  }
+
+  function playLaunch() {
+    const th = LT_THEMES[ltTheme];
+    screen.style.background = th.bg;
+    screen.style.color = th.ink;
+    const all = LT_SCRIPT.map((s) => s.lines.join(' ').replace(/[{}]/g, '')).join('. ') + '.';
+    if (reduce) {
+      screen.innerHTML = '<div class="s-inner"><span class="lt-static"><span class="tile" style="background:' + th.tile + '">' + horseshoe(th) + '</span>' + esc(LT_NAME) + '</span></div>';
+      return;
+    }
+    screen.innerHTML = '<div class="lt" aria-hidden="true"></div><div class="lt-ring" aria-hidden="true"></div><div class="lt-mark" aria-hidden="true">' +
+      horseshoe(th) + '</div><div class="lt-name" aria-hidden="true"></div><span class="sr-only">' + esc(all + ' ' + LT_NAME + '.') + '</span>';
+    const block = $('.lt', screen);
+    const mark = $('.lt-mark', screen), ring = $('.lt-ring', screen), nameEl = $('.lt-name', screen);
+    const glyph = $('svg', mark);
+    mark.style.background = th.tile;
+    ring.style.borderColor = th.tile;
+    nameEl.style.color = th.ink;
+    let nameBox = null;
+    const { plan, events } = launchPlan();
+    const last = plan[plan.length - 1];
+    const pos = { st: null, html: null, x: 0, y: 0 };
+    let start = 0;
+    let prev = 0;
+    function frame(now) {
+      if (!start) { start = now; prev = now; scheduleTyping(events); }
+      const ms = now - start;
+      const dt = now - prev;
+      prev = now;
+      let st = null;
+      plan.forEach((s) => { if (ms >= s.at) st = s; });
+      const between = st && st !== last && ms >= st.end;
+      const html = !st || between ? '' : st.lines.map((words) => words.map((w) => {
+        if (w.parts) {
+          const p = w.parts.filter((x) => x.at <= ms).pop();
+          return p ? esc(p.text) : '';
+        }
+        if (w.born > ms) return '';
+        if (!w.key) return esc(w.w);
+        const since = ms - w.born;
+        let n = Math.floor(since / (2 * LT_FRAME)) + 1, shown = '';
+        for (const ch of w.w) { if (n <= 0) break; shown += ch; if (ch !== ' ') n--; }
+        const colour = since < 1000 ? th.text[Math.floor(since / (4 * LT_FRAME)) % th.text.length] : th.text[0];
+        return '<span style="color:' + colour + '">' + esc(shown) + '</span>';
+      }).filter(Boolean).join(' ')).filter(Boolean).join('\n');
+      if (html !== pos.html) { block.innerHTML = html; pos.html = html; }
+      const w = block.offsetWidth;
+      const h = block.offsetHeight;
+      const tx = (screen.clientWidth - w) / 2;
+      const ty = (screen.clientHeight - h) / 2;
+      if (pos.st !== st) { pos.st = st; pos.x = tx; pos.y = ty; }
+      else { const k = 1 - Math.exp(-dt / 200); pos.x += (tx - pos.x) * k; pos.y += (ty - pos.y) * k; }
+      let scale = 1;
+      if (st && st.lockup && ms >= st.exit) scale = Math.max(0.02, 1 - Math.pow(Math.min(1, (ms - st.exit) / 200), 3));
+      block.style.transformOrigin = (w / 2) + 'px ' + (h / 2) + 'px';
+      block.style.transform = 'translate(' + pos.x.toFixed(1) + 'px,' + pos.y.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+      const markOn = st && st.lockup && ms >= st.markAt;
+      block.style.visibility = markOn ? 'hidden' : 'visible';
+      mark.style.visibility = markOn ? 'visible' : 'hidden';
+      if (markOn) {
+        const fs = parseFloat(getComputedStyle(block).fontSize);
+        const px = fs * 0.936;                      // the icon: 1.3 × the cap height
+        const cx = screen.clientWidth / 2, cy = screen.clientHeight / 2;
+        if (!nameBox) { nameEl.textContent = LT_NAME; nameBox = { w: nameEl.offsetWidth, h: nameEl.offsetHeight }; nameEl.textContent = ''; }
+        const gap = fs * 0.3, dx = -(gap + nameBox.w) / 2;
+        const since = ms - st.markAt;
+        const lq = Math.min(1, since / 350);
+        const sc = lq >= 1 ? 1 : 0.55 + 0.45 * easeBack(lq);   // lands with a small overshoot
+        const slide = ms >= st.lockAt ? dx * easeOut(Math.min(1, (ms - st.lockAt) / 350)) : 0;
+        mark.style.width = mark.style.height = px.toFixed(1) + 'px';
+        mark.style.transform = 'translate(' + (cx + slide - px / 2).toFixed(1) + 'px,' + (cy - px / 2).toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')';
+        // the logo's own motion: the horseshoe swings once on its nail
+        glyph.style.transformOrigin = '50% 12%';
+        glyph.style.transform = 'rotate(' + (-18 * (1 - elasticOut(Math.min(1, since / 1000)))).toFixed(2) + 'deg)';
+        // one soft ring spreads from the landed icon
+        const rq = since / 600;
+        ring.style.visibility = rq < 1 ? 'visible' : 'hidden';
+        ring.style.width = ring.style.height = px.toFixed(1) + 'px';
+        ring.style.transform = 'translate(' + (cx - px / 2).toFixed(1) + 'px,' + (cy - px / 2).toFixed(1) + 'px) scale(' + (1 + 1.4 * easeOut(Math.min(1, rq))).toFixed(3) + ')';
+        ring.style.opacity = rq < 1 ? (0.55 * (1 - rq)).toFixed(3) : '0';
+        // the name types in beside it, word by word
+        const n = st.nameT.filter((x) => x <= ms).length;
+        const shown = LT_NAME.split(' ').slice(0, n).join(' ');
+        if (nameEl.textContent !== shown) nameEl.textContent = shown;
+        nameEl.style.visibility = n ? 'visible' : 'hidden';
+        nameEl.style.transform = 'translate(' + (cx + dx + px / 2 + gap).toFixed(1) + 'px,' + (cy - nameBox.h / 2).toFixed(1) + 'px)';
+      } else {
+        ring.style.visibility = 'hidden';
+        nameEl.style.visibility = 'hidden';
+      }
+      if (ms < last.end + 100) raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  function playAI() {
+    const text = TONES.find((t) => t.id === 'ai-demo').typing;
+    screen.innerHTML = '<div class="s-inner"><div class="box" id="ai-box"></div><div class="think" id="ai-think"></div><div class="ans" id="ai-ans"></div></div>';
+    const box = $('#ai-box'); const think = $('#ai-think'); const ans = $('#ai-ans');
+    const done = () => {
+      box.textContent = text;
+      think.textContent = '✓ read 3 profiles   ✓ compared pastures   ✓ checked turnout hours';
+      ans.innerHTML = 'Thunder is a 92% fit: same turnout hours, both grazers. <span class="cite">profile</span><span class="cite">pasture log</span>';
+    };
+    if (reduce) { done(); return; }
+    let i = 0;
+    const caret = '<span class="caret"></span>';
+    const step = () => {
+      box.innerHTML = esc(text.slice(0, i)) + caret;
+      if (i < text.length) { i += 1; later(step, 45); }
+      else {
+        later(() => { think.textContent = '… thinking'; }, 300);
+        later(() => { think.textContent = '✓ read 3 profiles   ✓ compared pastures   ✓ checked turnout hours'; }, 1100);
+        later(() => { ans.innerHTML = 'Thunder is a 92% fit: same turnout hours, both grazers. <span class="cite">profile</span><span class="cite">pasture log</span>'; ans.classList.add('anim-soft'); }, 1500);
+      }
+    };
+    step();
+  }
+
+  function playChange() {
+    const after = '<div class="s-inner"><span class="tag">AFTER</span><span class="after">Now the card says why.</span><span class="pr">#1 · in review</span></div>';
+    if (reduce) { screen.innerHTML = after; return; }
+    screen.innerHTML = '<div class="s-inner"><span class="tag anim-fade">BEFORE</span><span class="before anim-fade">Every swipe came down to the photo.</span></div>';
+    later(() => { screen.innerHTML = after; }, 1900);
+  }
+
+  function row(dt, dd) { return '<dt>' + dt + '</dt><dd>' + dd + '</dd>'; }
+
+  function show(id) {
+    clearTimers();
+    current = id;
+    const t = TONES.find((x) => x.id === id);
+    screen.className = 'screen ' + t.cls;
+    screen.style.background = '';
+    screen.style.color = '';
+    $('#lt-ctl').hidden = !t.launch;
+    if (t.launch) playLaunch();
+    else if (t.id === 'ai-demo') playAI();
+    else if (t.twoStep) playChange();
+    else screen.innerHTML = t.html;
+    $$('button', tabs).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tone === id)));
+    tc.textContent = '00:00:00:00 · ' + id;
+    sheet.innerHTML = '<h3>' + t.id + '</h3><dl>' +
+      row('Feels like', esc(t.feel)) + row('Pace', esc(t.pace)) + row('Words', esc(t.words)) +
+      row('Type', esc(t.type)) + row('Transitions', esc(t.trans)) + (t.sound ? row('Sound', esc(t.sound)) : '') + row('Best for', esc(t.best)) +
+      row('Ask with', '<div class="say-chips">' + t.say.map((s) => '<span>' + esc(s) + '</span>').join('') + '</div>') +
+      '</dl><div class="ex"><p class="prompt">' + esc(t.ex) + '</p><button class="copy" type="button">Copy</button></div>';
+  }
+
+  TONES.forEach((t) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = t.id;
+    b.dataset.tone = t.id;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => show(t.id));
+    tabs.appendChild(b);
+  });
+  $('#tone-replay').addEventListener('click', () => show(current));
+  $$('[data-lt-theme]').forEach((b) => b.addEventListener('click', () => {
+    ltTheme = b.dataset.ltTheme;
+    $$('[data-lt-theme]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    show('launch');
+  }));
+  $('#lt-sound').addEventListener('click', (e) => {
+    soundOn = !soundOn;
+    if (soundOn && !audioReady()) soundOn = false;
+    e.currentTarget.setAttribute('aria-pressed', String(soundOn));
+    e.currentTarget.textContent = soundOn ? 'Sound on' : 'Play with sound';
+    show('launch');
+  });
+  show('launch');
+})();
+</script>
+
+
+</body></html>

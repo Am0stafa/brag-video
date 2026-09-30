@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- Test: a statement that stays (exit "none") gives way to the next one on its stage, and a focus pull
+     and a circle reveal between scenes whose text sits in the same place leave no layout findings. -->
+<html lang="en" data-resolution="landscape">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<script src="assets/vendor/gsap.min.js"></script>
+<link rel="stylesheet" href="assets/launch/launch.css" />
+<script src="assets/launch/launch-text.js"></script>
+<script src="assets/launch/launch-motion.js"></script>
+<style>
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 600; font-display: block; src: url('assets/fonts/geist-600-normal-latin.woff2') format('woff2'); }
+:root { --lt-font: "Geist", sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0b1220; }
+#root { position: relative; width: 100%; height: 100%; }
+.scene { position: absolute; inset: 0; overflow: hidden; background: #0b1220; }
+.big { position: absolute; left: 300px; top: 470px; width: 1320px; font: 600 110px/1.2 "Geist", sans-serif; color: #e8eef7; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="10" data-width="1920" data-height="1080">
+  <div id="sA" class="lt-stage"></div>
+  <div id="sB" class="scene"><div class="big">Every alert is traced</div></div>
+  <div id="sC" class="scene"><div class="big">A verdict you can read</div></div>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+function build() {
+  const L = window.LaunchText, M = window.LaunchMotion;
+  const A = document.getElementById("sA"), B = document.getElementById("sB"), C = document.getElementById("sC");
+  L.theme({ bg: "#0b1220", ink: "#e8eef7", accent: "#4f8cff" });
+  // a statement that stays, then the next statement on the same stage
+  L.statement(tl, A, { at: 0.1, lines: ["Connect the tools you run"], exit: "none" });
+  L.statement(tl, A, { at: 3.0, lines: ["Every event {correlated}"], exit: "none" });
+  // a focus pull from the statements into a screen whose text sits in the same place
+  M.focus(tl, { at: 6.0, from: A, to: B });
+  // a circle reveal into another screen, same place again
+  M.reveal(tl, { at: 8.0, from: B, scene: C });
+  window.__timelines["main"] = tl;
+}
+document.fonts.ready.then(build);
+</script>
+</body></html>

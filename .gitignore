@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# videos /brag makes when run inside this repo
+brag-output*/
+
+# the test runner's scratch folder
+tests/.work/
