@@ -155,11 +155,15 @@ will animate a raster logo (wings that beat, a sweep that turns, a mark that ass
 it has to be cut into parts first; step 3 explains the "rig" and the check that proves it
 still looks exactly like the original at rest.
 
-In `launch`, the logo also becomes the product's icon: a tile of the brand colour with the
-logo on it, like an app icon (launch-style.md, "The product's mark"). Record the logo in a
-form that reads at about 110 px (the app icon or favicon is often already that), the
-brand colour for the tile, and the product's name for the closing lockup. With no logo,
-write "no logo": the icon becomes the brand orb, a breathing circle in the brand colour.
+In `launch`, the logo also becomes the product's mark: statements condense into it, and the
+video closes on it beside the product's name (launch-style.md, "The product's mark"). It
+shows **bare, the way the product shows it**, with no tile or square behind it. Record the
+logo mark itself in its own colours (the glyph from the navbar or the favicon, without the
+favicon's rounded square), in a form that reads at about 110 px on the statements'
+background, the brand colour for its glow, and the product's name for the closing lockup.
+If the logo is white-on-colour only, draw it in the brand colour (or the ink) so it reads on
+the canvas. Put it on an app-icon tile only when the user asks for the app icon. With no
+logo, write "no logo": the mark becomes the brand orb, a breathing circle in the brand colour.
 
 Then look at every visual with one question: **what does this thing do in the real
 world?** The logo and any mascot, the icons, the illustrations, and the product's own

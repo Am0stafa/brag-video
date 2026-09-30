@@ -74,7 +74,7 @@ Work out from the prompt where the change lives (a PR, a branch, commits, uncomm
 
 **Read:** [references/step-1-inspect.md](references/step-1-inspect.md)
 
-The whole product for a demo; the change and its surroundings for the other two. Exact colors, fonts and logo (in `launch` it becomes the product's icon), whether the app is light or dark, the product's real copy, every feature and user flow (the coverage list), everything that could move (the logo, icons, numbers, charts, scans), and a list of private terms.
+The whole product for a demo; the change and its surroundings for the other two. Exact colors, fonts and logo (in `launch` it becomes the product's mark, shown bare, never on a tile unless asked), whether the app is light or dark, the product's real copy, every feature and user flow (the coverage list), everything that could move (the logo, icons, numbers, charts, scans), and a list of private terms.
 
 **Gate:** the rubric is answered; the coverage list, the theme and the motion candidates are recorded; and `<output-dir>/privacy-terms.txt` exists.
 
@@ -153,7 +153,7 @@ Tones are vocabulary for pacing and style; the prompt picks one in words ("like 
 
 | Tone | Feel | Good for |
 |---|---|---|
-| **`launch`** (default) | Statements that stream in like a model's answer, in the app's own theme; one lit word flickering through colour; a deep key sound on every typed piece; the product's icon opening scenes like an app, warps and camera moves; a close on the icon beside the product's name | every video, unless the prompt asks for another tone; "OpenAI-style" |
+| **`launch`** (default) | Statements that stream in like a model's answer, in the app's own theme; one lit word flickering through colour; a deep key sound on every typed piece; the product's bare logo coming into focus and opening scenes like an app, warps and camera moves; a close on the logo beside the product's name | every video, unless the prompt asks for another tone; "OpenAI-style" |
 | `polished` | Serious, elegant, restrained | "like an Apple keynote", premium products |
 | `ai-demo` | Dark, calm keynote; typed prompt → thinking → cited answer | "show it thinking", agent demos |
 | `app-store` | Smooth feature cards | "clean feature cards" |

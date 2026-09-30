@@ -2,7 +2,7 @@
    Statements in a semibold sans on a flat canvas: the film's near-white by default, black for
    a dark scene, or the app's own background (LaunchText.theme sets --lt-bg, --lt-ink,
    --lt-accent). Left-aligned lines in a block that stays centred, a thin ink caret, accent
-   thinking dots, and the product's mark (its icon on a brand tile) with one soft ring; plus the
+   thinking dots, and the product's mark (its logo, bare, coming into focus with a soft glow); plus the
    cursor, tap and "Sample data" label of launch-ui.js. Set the project's own font through
    --lt-font (embed it with @font-face); Geist SemiBold is the closest free match to the
    reference. */
@@ -50,8 +50,8 @@
   border-radius: 50%;
   background: var(--lt-accent, #0a84f9);
 }
-/* the product's mark: its logo on a brand-colour tile, like an app icon (launch-text.js sets
-   the size, colour, corner radius and position) */
+/* the product's mark: its logo, bare on the canvas by default (or on a brand-colour tile, like an
+   app icon, when the mark asks; launch-text.js sets the size, colour, corner radius and position) */
 .lt-mark {
   position: absolute;
   left: 0;
@@ -61,6 +61,10 @@
   overflow: hidden;
   will-change: transform;
 }
+/* a bare logo fills its box, and its glow spreads past it */
+.lt-mark.lt-mark-bare {
+  overflow: visible;
+}
 .lt-mark-glyph {
   position: relative; /* above the flat layer below */
   display: grid;
@@ -68,15 +72,17 @@
   width: 62%;
   height: 62%;
 }
-/* an app icon that draws its own tile (mark.tile "own") fills the whole icon */
+/* a bare logo, and an app icon that draws its own tile (mark.tile "own"), fill the whole box */
+.lt-mark-bare .lt-mark-glyph,
 .lt-mark-glyph.lt-mark-own {
   width: 100%;
   height: 100%;
 }
-/* the flat brand colour a gradient tile, or an app icon's own tile, turns into as it grows */
+/* the flat brand colour a tile turns into as it grows, or a bare logo's "fill" grows out of it */
 .lt-mark-flat {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
 }
 .lt-mark-glyph svg {
   display: block;
@@ -93,7 +99,7 @@ img.lt-mark-glyph { object-fit: contain; }
   line-height: 1;
   letter-spacing: -0.02em;
 }
-/* the one soft ring that spreads when the mark lands */
+/* the one soft ring that spreads when the mark lands (the mark's land "pop" only) */
 .lt-ping {
   position: absolute;
   left: 0;

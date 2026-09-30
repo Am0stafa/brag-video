@@ -8,9 +8,10 @@
  *     4 frames per colour, then settles on the accent;
  *   - a "slot" word cycles through candidates, each whole and in its own colour;
  *   - "thinking" dots can pause the typing, then a caret types the rest;
- *   - a statement exits by a cut, a dim, a slide, a blur, or by collapsing into the product's
- *     own icon: its logo on a brand tile (with no logo, the brand orb: a breathing circle),
- *     which lands with one soft ring, then hides, stays, becomes the closing lockup with the
+ *   - a statement exits by a cut, a dim, a slide, a blur, or by condensing into the product's
+ *     own logo, bare on the canvas (with no logo, the brand orb: a breathing circle). The
+ *     logo comes into focus with a soft glow of its brand colour (no tile, no pop, unless the
+ *     theme's mark asks for them), then hides, stays, becomes the closing lockup with the
  *     name, fills the frame with the brand colour, or opens into the next scene the way an
  *     app opens. This is /brag's own move: the film collapses into a colour-cycling dot,
  *     which /brag never copies.
@@ -31,7 +32,7 @@
  *
  * Usage, inside the composition's build(), after document.fonts.ready:
  *   LaunchText.theme({ bg: "#0b1220", ink: "#e8eef7", accent: "#4f8cff",
- *                      mark: { svg: "<svg …the product's logo, drawn to read on the brand tile…>" } });
+ *                      mark: { svg: "<svg …the product's logo in its own colours…>" } });
  *   const s1 = LaunchText.statement(tl, stage, { at: 0.1, lines: ["Horse Tinder for {Riders}"] });
  *   const s2 = LaunchText.statement(tl, stage, { at: s1.end, lines: ["Find the horse that fits", "your weekends and your pace"] });
  *   LaunchText.statement(tl, stage, { at: s2.end, lines: ["Match on {slot}"],
@@ -70,20 +71,22 @@
   }
   function isDark(bg) { return lum(rgb(bg)) < 0.18; }
   // Move a colour toward black (light background) or white (dark background) until it
-  // reaches the contrast needed for large text; the hue stays.
-  function fit(colour, bg, min, warn) {
+  // reaches the contrast needed for large text against every background given; the hue stays.
+  function fitAll(colour, backs, min, warn) {
     min = min || 3.2;
+    var bg = backs[0];
     var c = rgb(colour), target = isDark(bg) ? [255, 255, 255] : [0, 0, 0];
     for (var k = 0; k <= 50; k++) {
       var t = k / 50;
-      var m = [c[0] + (target[0] - c[0]) * t, c[1] + (target[1] - c[1]) * t, c[2] + (target[2] - c[2]) * t];
-      if (contrast(hex(m), bg) >= min) {
+      var m = hex([c[0] + (target[0] - c[0]) * t, c[1] + (target[1] - c[1]) * t, c[2] + (target[2] - c[2]) * t]);
+      if (backs.every(function (b) { return contrast(m, b) >= min; })) {
         if (warn && t > 0.35 && window.console) console.warn("launch-text: " + colour + " needed a big shift to read on " + bg + "; consider another accent");
-        return hex(m);
+        return m;
       }
     }
     return hex(target);
   }
+  function fit(colour, bg, min, warn) { return fitAll(colour, [bg], min, warn); }
 
   // The film's hues, for the lit word's flicker. On its white canvas the text versions are
   // deepened to pass contrast.
@@ -96,20 +99,26 @@
 
   /**
    * Resolve a theme: "light", "dark", or {bg, ink, accent, palette, mark} (any part may be left out).
-   * mark is the product's icon for the "mark" exit:
-   *   { svg: "<svg…>" } or { src: "assets/brand/icon.svg" }  the logo; with neither, the icon is
-   *     the brand orb, a breathing circle in the brand colour (a product with no logo); { text: "P" } only when an
-   *     initial was asked for
-   *   tile: true (default) sets the logo on a brand-colour tile like an app icon; false shows it as
-   *     is (a logo that is already a shape); "own" when the svg or src is a whole app icon that
-   *     draws its own tile (a gradient, a border): it fills the icon and the engine draws no tile
-   *   color: the brand colour: the tile, its ring, and the flat field a "fill" ends in (default
-   *     the first colour of `background`, else the theme's brand accent as the brand has it)
-   *   background: any CSS background for the tile, such as the app icon's gradient
+   * mark is the product's logo for the "mark" exit:
+   *   { svg: "<svg…>" } or { src: "assets/brand/logo.svg" }  the logo, drawn in its own colours so
+   *     it reads on the canvas as it is; with neither, the mark is the brand orb, a breathing circle
+   *     in the brand colour (a product with no logo: say orb: true, and the console note that
+   *     catches a forgotten logo stays quiet); { text: "P" } only when an initial was asked for
+   *   tile: false (the default) shows the logo bare on the canvas, the way the product shows it:
+   *     it comes into focus with a soft glow of the brand colour. true (or a tile `background`)
+   *     sets it on a brand-colour tile like an app icon, and "own" takes an svg or src that is a
+   *     whole app icon drawing its own tile; use either only when the user asks for the app icon
+   *   land: "focus" (the default): the logo comes into focus, out of a soft blur, settling from
+   *     a hair larger, with no overshoot and no ring; "pop": the older landing, from 55% with a
+   *     small overshoot and one soft ring
+   *   color: the brand colour: the glow, a tile, its ring, and the flat field a "fill" ends in
+   *     (default the first colour of `background`, else the theme's brand accent as the brand has it)
+   *   background: any CSS background for a tile, such as the app icon's gradient
    *     ("linear-gradient(135deg, #1d4ed8, #0ea5e9)"); as the tile grows ("fill", "open") it
    *     turns into the flat `color`
-   *   radius: the tile's corner radius as a share of its size (default 0.23, an app icon's)
-   *   style: extra CSS for the tile, e.g. { boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }
+   *   radius: the corner radius of a tile, and of the shape a "fill" or "open" grows from the
+   *     logo, as a share of its size (default 0.23, an app icon's)
+   *   style: extra CSS for a tile, e.g. { boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }
    *   name: the product's name, for the "lockup" end
    */
   function resolve(spec) {
@@ -158,16 +167,23 @@
     return e;
   }
 
-  // ---- the product's mark: its icon on a brand tile, like an app icon ----
-  // Built from the theme's mark (or the global theme's). A product with no logo gets the
-  // brand orb instead: a circle the size of a capital letter in its one brand colour, with
-  // light and depth (a lighter top, a deeper edge). It lands like the icon, then breathes:
-  // it swells, lights up and glows once, then settles, and keeps breathing slowly while it
-  // stays on screen. One hue only: it never cycles through colours (that is the film's dot).
-  // `exact` keeps the size the caller asked for.
+  // ---- the product's mark: its logo, bare on the canvas ----
+  // Built from the theme's mark (or the global theme's). The logo shows as the product shows
+  // it, with no tile: it comes into focus out of a soft blur, settling from a hair larger, and
+  // a soft glow of its brand colour blooms around it, then breathes while it stays. A tile
+  // (an app icon) and the older pop-and-ring landing are there only when the mark asks. A
+  // product with no logo gets the brand orb instead: a circle the size of a capital letter in
+  // its one brand colour, with light and depth (a lighter top, a deeper edge). It comes into
+  // focus like the logo, then breathes: it swells, lights up and glows once, then settles, and
+  // keeps breathing slowly while it stays on screen. One hue only: it never cycles through
+  // colours (that is the film's dot). `exact` keeps the size the caller asked for.
   function hasLogo(th) {
     var spec = th.mark || current.mark || {};
     return !!(spec.svg || spec.src || spec.text);
+  }
+  function landOf(th) {
+    var spec = th.mark || current.mark || {};
+    return spec.land === "pop" ? "pop" : "focus";
   }
   function mix(a, b, t) {
     var x = rgb(a), y = rgb(b);
@@ -251,28 +267,33 @@
     var spec = th.mark || current.mark || {};
     var orb = !hasLogo(th);
     var own = !orb && spec.tile === "own";   // the logo is a whole app icon that draws its own tile
-    var tileBg = own || orb ? null : spec.background || null;
+    // a tile only when asked for: tile true, a tile `background`, or a letter (which needs one)
+    var tile = !orb && !own && (spec.tile === true || (spec.tile === undefined && !!(spec.text || spec.background)));
+    var bare = !orb && !own && !tile;
+    var land = landOf(th);
+    var tileBg = tile ? spec.background || null : null;
     var brand = spec.color || firstColour(spec.background) || th.brand || current.brand || "#0a84f9";
     if (orb) {
       if (!exact) px = Math.round(px / 1.3);
-      if (window.console && !makeMark.noted) {
+      // orb: true says the product really has no logo; otherwise a forgotten logo gets noticed
+      if (window.console && !makeMark.noted && !spec.orb) {
         makeMark.noted = true;
-        console.warn("launch-text: the mark has no logo, so the icon is the brand orb (a breathing circle in " + brand +
+        console.warn("launch-text: the mark has no logo, so it is the brand orb (a breathing circle in " + brand +
           "); if the product has a logo, pass it as theme({ mark: { svg } })");
       }
     }
-    var tile = !orb && !own && spec.tile !== false;
-    var radius = (tile || own) && !orb ? (spec.radius !== undefined ? +spec.radius : 0.23) : 0.5;
-    var m = el("div", "lt-mark");
+    var radius = orb ? 0.5 : (spec.radius !== undefined ? +spec.radius : 0.23);
+    var m = el("div", "lt-mark" + (bare ? " lt-mark-bare" : ""));
     m.style.width = m.style.height = px + "px";
     m.style.borderRadius = (radius * 100) + "%";
     m.style.background = orb ? brand : tile ? tileBg || brand : "transparent";
-    if (spec.style && !orb) for (var prop in spec.style) m.style[prop] = spec.style[prop];
+    if (spec.style && tile) for (var prop in spec.style) m.style[prop] = spec.style[prop];
     m.style.visibility = "hidden";
-    // Under the logo, a flat layer of the brand colour: a gradient tile, or an app icon's own
-    // tile, turns into it as the tile grows into the frame ("fill", "open").
+    // Under the logo, a flat layer of the brand colour: a gradient tile or an app icon's own
+    // tile turns into it as the tile grows into the frame ("fill", "open"), and a bare logo's
+    // "fill" grows it out of the logo.
     var flat = null;
-    if (tileBg || own) {
+    if (tileBg || own || bare) {
       flat = el("div", "lt-mark-flat");
       flat.style.background = brand;
       flat.style.opacity = "0";
@@ -289,19 +310,56 @@
       glyph.style.color = contrast("#ffffff", brand) >= contrast("#0b0d10", brand) ? "#ffffff" : "#0b0d10";
     }
     if (glyph) m.appendChild(glyph);
-    var ring = el("div", "lt-ping");
-    ring.style.width = ring.style.height = px + "px";
-    ring.style.borderRadius = (radius * 100) + "%";
-    ring.style.borderColor = brand;
-    ring.style.visibility = "hidden";
-    parent.appendChild(ring);
+    // the soft ring belongs to the older "pop" landing only
+    var ring = null;
+    if (land === "pop") {
+      ring = el("div", "lt-ping");
+      ring.style.width = ring.style.height = px + "px";
+      ring.style.borderRadius = (radius * 100) + "%";
+      ring.style.borderColor = brand;
+      ring.style.visibility = "hidden";
+      parent.appendChild(ring);
+    }
     parent.appendChild(m);
-    var mk = { el: m, ring: ring, glyph: glyph, flat: flat, own: own, px: px, radius: radius, brand: brand, orb: null };
+    var mk = { el: m, ring: ring, glyph: glyph, flat: flat, own: own, bare: bare, land: land, px: px, radius: radius,
+      brand: brand, rgb: rgb(brand), dark: th.dark, orb: null };
     if (orb) {
       mk.orb = { tint: mix(brand, "#ffffff", 0.42), shade: mix(brand, "#000000", 0.25), rgb: rgb(brand) };
       paintOrb(mk, 1, 0);
     }
     return mk;
+  }
+
+  var FOCUS = 0.5;   // the logo comes into focus in 0.5 s
+  // how the mark looks while it lands, `at` being when it starts: {sc, op, blur}
+  function landing(mk, time, at) {
+    var dt = time - at + 1e-6;
+    if (mk.land === "pop") {
+      var lq = Math.max(0, dt) / LAND;
+      return { sc: lq >= 1 ? 1 : 0.55 + 0.45 * ease(lq, "back"), op: 1, blur: 0 };   // a small overshoot
+    }
+    // into focus: out of a soft blur, settling from 6% larger, no overshoot
+    var e = ease(dt / FOCUS, "out");
+    return { sc: 1.06 - 0.06 * e, op: Math.max(0, Math.min(1, dt / (FOCUS * 0.6))), blur: mk.px * 0.12 * (1 - e) };
+  }
+  function landTime(mk) { return mk.land === "pop" ? LAND : FOCUS; }
+  // the bare logo's glow: it blooms as the logo comes into focus, settles to half, and breathes
+  // with the plan (on the beat once there is music)
+  function glowAt(time, at, plan) {
+    var dt = time - at;
+    if (dt <= 0) return 0;
+    var g = dt < 0.6 ? ease(dt / 0.6, "out") : 1 - 0.5 * ease((dt - 0.6) / 0.9, "inout");
+    return g + (plan ? 0.5 * breathAt(time, plan) : 0);
+  }
+  function paintGlow(mk, g) {
+    if (!mk.glyph) return;
+    var a = (mk.dark ? 0.5 : 0.32) * g;
+    mk.glyph.style.filter = a > 0.004 ? "drop-shadow(0 0 " + (mk.px * 0.3).toFixed(1) + "px rgba(" +
+      mk.rgb.map(Math.round).join(",") + "," + a.toFixed(3) + "))" : "none";
+  }
+  function paintLanding(mk, lk) {
+    mk.el.style.opacity = lk.op.toFixed(3);
+    mk.el.style.filter = lk.blur > 0.05 ? "blur(" + lk.blur.toFixed(2) + "px)" : "none";
   }
 
   // the end of the window a stage is visible in: its own clip, its nearest timed ancestor,
@@ -380,8 +438,10 @@
    *   until      the exit's absolute time instead (a beat from the cue file); it warns when that
    *              leaves under 0.8 s to read the finished statement
    *   exit       "cut" (default) | "dim" | "slide" | "blur" | "mark" | "none"
-   *              "mark": the statement shrinks into its centre and becomes the product's icon
-   *              (the theme's mark), which lands with a small overshoot and one soft ring
+   *              "mark": the statement condenses into its centre (it shrinks, blurs and fades in
+   *              0.3 s) while the product's logo (the theme's mark) comes into focus there, bare,
+   *              with a soft glow; with the mark's land "pop", it shrinks to a point in 0.2 s and
+   *              the logo lands with a small overshoot and one soft ring
    *              "none": it stays until the next statement on this stage starts (or a transition
    *              takes the stage away); its exitAt is where that transition should start
    *   markEnd    for exit "mark": "hide" (default) | "keep" (the icon stays until the next
@@ -391,7 +451,7 @@
    *              grows into a flat brand-colour field)
    *   next       the element "open" opens (see LaunchMotion.open)
    *   name       the product's name for "lockup" (default the theme's mark.name)
-   *   markHold   seconds the landed icon holds before its end (default 0.45; the orb: one full breath,
+   *   markHold   seconds the landed logo holds before its end (default 0.45; the orb: one full breath,
    *              0.9 s, or on the beat for two beats once music() is set)
    *   (the older names still work and give the icon: exit "dot", dotEnd "reveal" → "open",
    *   "wipe" → "fill"; there is no colour-cycling dot any more)
@@ -609,28 +669,33 @@
 
     // ---- 3. the exit ----
     var cap = size * 0.72;
-    var markPx = Math.round(cap * 1.3);   // the icon: about 110 px next to 118 px type
+    var markPx = Math.round(cap * 1.3);   // the logo: about 110 px next to 118 px type
     var mk = null;
     var end = exitAt;
-    var markAt = null, fillAt = null, openAt = null, growAt = null, orbPlan = null;
+    var markAt = null, fillAt = null, openAt = null, growAt = null, orbPlan = null, glowPlan = null;
+    var focusLand = exit === "mark" && landOf(th) === "focus";
+    var gone = focusLand ? 0.3 : 0.2;     // how long the statement takes to condense into the logo
     var lcx = 0, lcy = 0;
     var lockAt = null, lockDX = 0, nameEl = null, nameWords = [], nameT = [], nameX = 0, nameH = 0;
     if (exit === "dim") end = exitAt + 0.3 + 0.4;
     else if (exit === "slide") end = exitAt + 0.28;
     else if (exit === "blur") end = exitAt + 0.4;
     else if (exit === "mark") {
-      markAt = exitAt + 0.2;
+      // a focus landing starts while the statement is still condensing, so one becomes the other
+      markAt = exitAt + (focusLand ? 0.15 : 0.2);
+      var landDur = focusLand ? FOCUS : LAND;
+      var stays = markEnd === "keep" || markEnd === "lockup";
       if (!hasLogo(th)) {
         // the orb holds for its first breath, which is on the beat when there is music
-        orbPlan = breathPlan(markAt + LAND, markEnd === "keep" || markEnd === "lockup");
-        if (opts.markHold === undefined && opts.dotFlicker === undefined) markHold = orbPlan.t1 - (markAt + LAND);
-      }
-      end = markAt + LAND + markHold;
+        orbPlan = breathPlan(markAt + landDur, stays);
+        if (opts.markHold === undefined && opts.dotFlicker === undefined) markHold = orbPlan.t1 - (markAt + landDur);
+      } else if (focusLand) glowPlan = breathPlan(markAt + landDur, stays);   // the logo's glow breathes too
+      end = markAt + landDur + markHold;
       if (markEnd === "fill") { fillAt = end; end = fillAt + OPEN; }
       if (markEnd === "open") openAt = end;
       growAt = fillAt !== null ? fillAt : openAt;
       mk = makeMark(th, markPx, stage);
-      markPx = mk.px;   // a circle (no logo) is smaller than the icon tile
+      markPx = mk.px;   // a circle (no logo) is smaller than the logo's box
       // the landed place, set now: a frame the clock never reaches still shows it right
       var fin0 = states[states.length - 1];
       lcx = fin0.x + fin0.w / 2;
@@ -659,7 +724,7 @@
         lockAt = end;
         lockDX = -(gap + nameW) / 2;
         nameX = lcx + lockDX + markPx / 2 + gap;
-        var nt = lockAt + 0.3;   // once the icon has made room (its slide takes 0.35 s)
+        var nt = lockAt + 0.3;   // once the logo has made room (its slide takes 0.35 s)
         for (var nw = 0; nw < nameWords.length; nw++) {
           nameT.push(nt);
           emit(nt, "word");
@@ -684,7 +749,7 @@
     else if (exit === "dim") hideAt = exitAt + 0.7;
     else if (exit === "slide") hideAt = exitAt + 0.28;
     else if (exit === "blur") hideAt = exitAt + 0.4;
-    else if (exit === "mark") hideAt = exitAt + 0.2;
+    else if (exit === "mark") hideAt = exitAt + gone;
     var stageEnd = windowEnd(stage, at);
     var keeps = exit === "none" || (exit === "mark" && (markEnd === "keep" || markEnd === "lockup" || markEnd === "fill"));
     var tweenEnd = keeps ? Math.max(end, stageEnd) : end;
@@ -715,7 +780,11 @@
         if (exit === "dim") opacity = 1 - 0.72 * ease(q / 0.3, "out");
         else if (exit === "slide") { x -= W * 0.7 * ease(q / 0.28, "in"); opacity = 1 - ease(q / 0.28, "in"); }
         else if (exit === "blur") { blur = 20 * ease(q / 0.4, "out"); opacity = 1 - ease(q / 0.4, "in"); }
-        else if (exit === "mark") scale = Math.max(0.02, 1 - ease(q / 0.2, "in"));
+        else if (exit === "mark" && focusLand) {
+          // it condenses into the logo: shrinks toward its centre, blurs and fades
+          var cq = ease(q / gone, "in");
+          scale = 1 - 0.45 * cq; blur = size * 0.12 * cq; opacity = 1 - cq;
+        } else if (exit === "mark") scale = Math.max(0.02, 1 - ease(q / 0.2, "in"));
       }
       block.style.opacity = opacity.toFixed(3);
       block.style.filter = blur ? "blur(" + blur.toFixed(2) + "px)" : "none";
@@ -749,29 +818,32 @@
       var caret = block.querySelector(".lt-caret");
       if (caret) caret.style.opacity = time > built ? (Math.floor((time - built) / 0.5) % 2 === 0 ? "1" : "0") : "1";
       if (mk) {
-        // Place the icon on every frame, not only from markAt: tl.set shows it at markAt, and
+        // Place the logo on every frame, not only from markAt: tl.set shows it at markAt, and
         // the tween's time can land a hair before markAt on that same frame.
-        var lq = Math.max(0, time - markAt + 1e-6) / LAND;
-        var sc = lq >= 1 ? 1 : 0.55 + 0.45 * ease(lq, "back");   // lands with a small overshoot
+        var lk = landing(mk, time, markAt);
+        var sc = lk.sc;
         var mw = markPx, mh = markPx, mx = lcx - markPx / 2, my = lcy - markPx / 2, mr = mk.radius * markPx;
-        var glyphOp = 1, flatOp = 0, orbDepth = 1, orbB = 0;
+        var glyphOp = 1, flatOp = 0, orbDepth = 1, orbB = 0, glow = 0;
+        var calm = growAt !== null ? Math.max(0, Math.min(1, (growAt - time) / 0.12)) : 1;
         if (mk.orb) {
           // the orb breathes once it has landed, and is calm again by the time it grows
-          orbB = breathAt(time, orbPlan);
-          if (growAt !== null) orbB *= Math.max(0, Math.min(1, (growAt - time) / 0.12));
+          orbB = breathAt(time, orbPlan) * calm;
           sc *= 1 + 0.08 * orbB;
-        }
+        } else if (mk.bare && mk.land === "focus") glow = glowAt(time, markAt, glowPlan) * calm;
         if (growAt !== null && time >= growAt - 1e-6) {
-          // "fill" and "open": the tile grows to the full frame and its corners flatten, like an
-          // app opening; for "open", LaunchMotion.open fades the next scene in along the same path
+          // "fill" and "open": a rounded shape grows from the logo to the full frame and its
+          // corners flatten, like an app opening; for "open", LaunchMotion.open fades the next
+          // scene in along the same path
           var fq = ease((time - growAt) / OPEN, "inout");
           mx *= 1 - fq; my *= 1 - fq;
           mw += (W - mw) * fq; mh += (H - mh) * fq;
           mr *= 1 - fq; sc = 1;
+          lk = { sc: 1, op: 1, blur: 0 };
           glyphOp = Math.max(0, 1 - (time - growAt) / 0.15);
           // a gradient tile fades into the flat brand colour as it grows; an app icon's own tile
-          // gives way to it at once, under its fading picture
-          flatOp = mk.own ? 1 : fq;
+          // gives way to it at once, under its fading picture; a bare logo's "fill" grows the
+          // brand colour out of it, and its "open" shows only the next scene
+          flatOp = mk.own ? 1 : mk.bare ? (fillAt !== null ? fq : 0) : fq;
           orbDepth = 1 - fq;   // the orb's light and shade flatten into the brand colour
         }
         if (lockAt !== null) {
@@ -785,14 +857,18 @@
         ms.height = mh.toFixed(1) + "px";
         ms.borderRadius = mr.toFixed(1) + "px";
         ms.transform = "translate(" + mx.toFixed(2) + "px," + my.toFixed(2) + "px) scale(" + sc.toFixed(4) + ")";
+        paintLanding(mk, lk);
         if (mk.glyph) mk.glyph.style.opacity = glyphOp.toFixed(3);
         if (mk.flat) mk.flat.style.opacity = flatOp.toFixed(3);
         if (mk.orb) paintOrb(mk, orbDepth, orbB);
-        // one soft ring spreads from the landed icon
-        var rq = Math.max(0, time - markAt) / 0.6;
-        mk.ring.style.transform = "translate(" + (lcx - markPx / 2).toFixed(2) + "px," + (lcy - markPx / 2).toFixed(2) + "px) scale(" +
-          (1 + 1.4 * ease(Math.min(1, rq), "out")).toFixed(4) + ")";
-        mk.ring.style.opacity = (rq < 1 ? 0.55 * (1 - rq) : 0).toFixed(3);
+        if (mk.bare) paintGlow(mk, glow);
+        if (mk.ring) {
+          // the "pop" landing: one soft ring spreads from the landed icon
+          var rq = Math.max(0, time - markAt) / 0.6;
+          mk.ring.style.transform = "translate(" + (lcx - markPx / 2).toFixed(2) + "px," + (lcy - markPx / 2).toFixed(2) + "px) scale(" +
+            (1 + 1.4 * ease(Math.min(1, rq), "out")).toFixed(4) + ")";
+          mk.ring.style.opacity = (rq < 1 ? 0.55 * (1 - rq) : 0).toFixed(3);
+        }
       }
     }
     tl.to(proxy, { t: tweenEnd, duration: Math.max(FRAME, tweenEnd - at), ease: "none", onUpdate: render, immediateRender: false }, at);
@@ -803,8 +879,10 @@
     if (exit === "none") stage.__ltKept = { els: [block], from: at };
     if (mk) {
       tl.set(mk.el, { visibility: "inherit" }, markAt);
-      tl.set(mk.ring, { visibility: "inherit" }, markAt);
-      tl.set(mk.ring, { visibility: "hidden" }, markAt + 0.6);
+      if (mk.ring) {
+        tl.set(mk.ring, { visibility: "inherit" }, markAt);
+        tl.set(mk.ring, { visibility: "hidden" }, markAt + 0.6);
+      }
       if (markEnd === "hide") tl.set(mk.el, { visibility: "hidden" }, end);
       else if (markEnd === "open") tl.set(mk.el, { visibility: "hidden" }, openAt + OPEN);
       else stage.__ltKept = { els: nameEl ? [mk.el, nameEl] : [mk.el], from: markAt };
@@ -816,7 +894,7 @@
       out.markX = out.dotX = lcx;
       out.markY = out.dotY = lcy;
       out.markSize = markPx;
-      out.glyph = mk.glyph || null;   // the logo inside the tile, to animate its parts
+      out.glyph = mk.glyph || null;   // the logo itself, to animate its parts
     }
     if (exit === "mark" && markEnd === "open") {
       if (!opts.next || !window.LaunchMotion) throw new Error("launch-text: markEnd \"open\" needs `next` and launch-motion.js");
@@ -864,9 +942,10 @@
 
   /**
    * mark(tl, stage, {at, x, y, hold, keep, size}) -> {at, end, el, glyph} shows the product's
-   * icon on its own (a logo moment, a scene opener): it lands with a small overshoot and one
-   * soft ring (the orb then breathes), then hides after `hold` seconds (default 0.8; the orb's
-   * one breath, 0.9) or, with keep, stays until the next statement on the same stage.
+   * logo on its own (a logo moment, a scene opener): it comes into focus with its soft glow (the
+   * orb then breathes; with the mark's land "pop", it lands with a small overshoot and one soft
+   * ring), then hides after `hold` seconds (default 0.8; the orb's one breath, 0.9) or, with
+   * keep, stays until the next statement on the same stage.
    */
   function mark(tl, stage, opts) {
     opts = opts || {};
@@ -874,35 +953,42 @@
     var W = stage.clientWidth || 1920, H = stage.clientHeight || 1080;
     var at = opts.at || 0;
     var stays = !!opts.keep;
-    var orbPlan = hasLogo(th) ? null : breathPlan(at + LAND, stays);
-    var hold = opts.hold !== undefined ? opts.hold : (opts.dur !== undefined ? opts.dur : (orbPlan ? orbPlan.t1 - (at + LAND) : 0.8));
     var px = opts.size || Math.round(W * 0.0615 * 0.72 * 1.3);
     var cx = opts.x !== undefined ? opts.x : W / 2, cy = opts.y !== undefined ? opts.y : H / 2;
     var mk = makeMark(th, px, stage, !!opts.size);
     px = mk.px;
-    // the clock runs through the landing and the ring, and on to the end while the orb breathes
-    var tEnd = stays ? Math.max(at + LAND + hold, windowEnd(stage, at)) : at + Math.max(0.6, LAND + hold);
+    var landDur = landTime(mk);
+    var orbPlan = mk.orb ? breathPlan(at + landDur, stays) : null;
+    var glowPlan = mk.bare && mk.land === "focus" ? breathPlan(at + landDur, stays) : null;
+    var hold = opts.hold !== undefined ? opts.hold : (opts.dur !== undefined ? opts.dur : (orbPlan ? orbPlan.t1 - (at + landDur) : 0.8));
+    // the clock runs through the landing (and the ring), and on to the end while it breathes
+    var tEnd = stays ? Math.max(at + landDur + hold, windowEnd(stage, at)) : at + Math.max(0.6, landDur + hold);
     function render(time) {
-      var lq = Math.max(0, time - at + 1e-6) / LAND;
-      var sc = lq >= 1 ? 1 : 0.55 + 0.45 * ease(lq, "back");
+      var lk = landing(mk, time, at);
       var b = orbPlan ? breathAt(time, orbPlan) : 0;
-      sc *= 1 + 0.08 * b;
+      var sc = lk.sc * (1 + 0.08 * b);
       mk.el.style.transformOrigin = "50% 50%";
       mk.el.style.transform = "translate(" + (cx - px / 2).toFixed(2) + "px," + (cy - px / 2).toFixed(2) + "px) scale(" + sc.toFixed(4) + ")";
+      paintLanding(mk, lk);
       if (mk.orb) paintOrb(mk, 1, b);
-      var rq = Math.max(0, time - at) / 0.6;
-      mk.ring.style.transform = "translate(" + (cx - px / 2).toFixed(2) + "px," + (cy - px / 2).toFixed(2) + "px) scale(" +
-        (1 + 1.4 * ease(Math.min(1, rq), "out")).toFixed(4) + ")";
-      mk.ring.style.opacity = (rq < 1 ? 0.55 * (1 - rq) : 0).toFixed(3);
+      if (glowPlan) paintGlow(mk, glowAt(time, at, glowPlan));
+      if (mk.ring) {
+        var rq = Math.max(0, time - at) / 0.6;
+        mk.ring.style.transform = "translate(" + (cx - px / 2).toFixed(2) + "px," + (cy - px / 2).toFixed(2) + "px) scale(" +
+          (1 + 1.4 * ease(Math.min(1, rq), "out")).toFixed(4) + ")";
+        mk.ring.style.opacity = (rq < 1 ? 0.55 * (1 - rq) : 0).toFixed(3);
+      }
     }
-    render(orbPlan ? orbPlan.t1 : at + LAND + ORB_BREATH);   // the landed state at rest, for any frame the clock never reaches
+    render(orbPlan ? orbPlan.t1 : at + landDur + ORB_BREATH);   // the landed state at rest, for any frame the clock never reaches
     var proxy = { t: at };
     tl.to(proxy, { t: tEnd, duration: tEnd - at, ease: "none", immediateRender: false,
       onUpdate: function () { render(proxy.t); } }, at);
     tl.set(mk.el, { visibility: "inherit" }, at);
-    tl.set(mk.ring, { visibility: "inherit" }, at);
-    tl.set(mk.ring, { visibility: "hidden" }, at + 0.6);
-    if (!opts.keep) tl.set(mk.el, { visibility: "hidden" }, at + LAND + hold);
+    if (mk.ring) {
+      tl.set(mk.ring, { visibility: "inherit" }, at);
+      tl.set(mk.ring, { visibility: "hidden" }, at + 0.6);
+    }
+    if (!opts.keep) tl.set(mk.el, { visibility: "hidden" }, at + landDur + hold);
     else {
       // joins whatever else stays on this stage (a statement with exit "none"): all of it gives
       // way to the next statement
@@ -910,7 +996,7 @@
       stage.__ltKept = { els: (kept ? kept.els : []).concat([mk.el]), from: kept ? Math.min(kept.from, at) : at };
     }
     emit(at, "mark");
-    return { at: at, end: at + LAND + hold, el: mk.el, glyph: mk.glyph || null };
+    return { at: at, end: at + landDur + hold, el: mk.el, glyph: mk.glyph || null };
   }
 
   window.LaunchText = {

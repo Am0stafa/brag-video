@@ -118,7 +118,7 @@ Pick the poster, the frame shown before the video plays. It must be a **settled*
 (text fully in, nothing mid-transition) that works on its own and names the product:
 
 - product demo → a frame that names the product: the title card or the logo lockup (in
-  `launch`, the settled lockup: the product's icon beside its name), or a settled UI frame
+  `launch`, the settled lockup: the product's logo beside its name), or a settled UI frame
   with the name visible;
 - feature brag → the *after* state with the feature's name (a frozen "before" is a
   screenshot of the bug);
@@ -216,7 +216,7 @@ say. Choose them from what this video actually is; never a fixed list:
   own scene"; one feature with more to it → "go deeper on [feature]" (a second use, an
   edge case).
 - **Look:** the other theme ("try the light version"), the brand colour as the lit word,
-  the icon's ending (the lockup, or a fill into the brand colour), the logo's motion
+  the logo's ending (the lockup, or a fill into the brand colour), the logo's motion
   switched off or made bigger.
 
 Write each as a question with its sentence ready to copy:

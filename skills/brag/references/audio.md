@@ -232,7 +232,7 @@ cut through without being louder. The commands are in step-3-compose.md, "The ty
 sound"; `typing_track.py --one key.wav` writes a single hit to listen to or to reuse.
 `audio_report.py --hits` proves on the final video that the hits are heard.
 `typing_track.py --transitions` adds soft whooshes when a scene opens (app open, fill,
-reveal, warp) and a small pop when the product's icon lands; give it `--cues
+reveal, warp) and a small pop when the product's logo comes into focus; give it `--cues
 tools/score.cues.json` too, so no whoosh doubles a hit the music already has there.
 
 ### Route 3 — source a real-world sound
@@ -308,7 +308,7 @@ whinnies far more than a real one. Write any substitution into `credits.md`.
 
 | Tone | Effects |
 |---|---|
-| `launch` (default) | the deep key on every typed piece (`typing_track.py`, about 8 dB over the music), composed `pulse` at 120–128 BPM with a breakdown under a dark or trust scene, clicks only on real UI actions, the sounds of the motion found, a small pop when the product's icon lands |
+| `launch` (default) | the deep key on every typed piece (`typing_track.py`, about 8 dB over the music), composed `pulse` at 120–128 BPM with a breakdown under a dark or trust scene, clicks only on real UI actions, the sounds of the motion found, a soft pop when the product's logo comes into focus |
 | `polished`, `ai-demo` | a light layer on real actions (clicks, arrivals, a completion) and one warm impact per big moment |
 | `changelog` | very few: the before → after switch, the proof moment, the outro |
 | `app-store`, `default` | one sound per feature card or arrival, a bell on the outro |

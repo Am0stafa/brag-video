@@ -60,7 +60,7 @@ solves and for whom.]
 - Theme: [light / dark] — statements on [background] with [text] and [brand accent]
 - Fonts: [display, body, data; embedded locally from …]
 - Logo: [file; animated or not]
-- Product's icon (`launch`): [the logo drawn for its tile, or "no logo: the brand orb"; the brand colour; the name for the lockup]
+- Product's mark (`launch`): [the bare logo in its own colours (no tile unless asked), or "no logo: the brand orb"; the brand colour for its glow; the name for the lockup]
 
 ## Motion found
 [From step 1 and motion-opportunities.md: everything that moves by default, without being

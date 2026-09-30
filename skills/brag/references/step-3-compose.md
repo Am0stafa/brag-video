@@ -65,7 +65,7 @@ and story with their own.
 
 ## Visual identity
 - Colors: [hex values]   Fonts: [families, local files]   Logo: [file, rig or not]
-- Product's icon (`launch`): [the logo for its tile, or the brand orb when there is none; the brand colour; the name; the logo motion it plays]
+- Product's mark (`launch`): [the bare logo in its own colours, or the brand orb when there is none; the brand colour for its glow; the name; the logo motion it plays]
 
 ## Storyboard
 Use `brag-plan.md` as the contract. Scene summary:
@@ -368,8 +368,9 @@ stranger and better than the invented version.
 - [ ] Every item of `## Motion found` is built (or kept still because the prompt or the
       brand's rules say so, noted in the plan).
 - [ ] With `launch`: the statements use the app's theme; the theme has the product's
-      mark (its logo, or the brand orb when it has none; its brand colour; its name), and a
-      logo icon plays the logo's motion; there is no colour-cycling dot; the reading-time
+      mark (its bare logo in its own colours, with no tile unless the user asked for the app
+      icon, or the brand orb when it has none; its brand colour; its name), and the logo
+      plays its motion; there is no colour-cycling dot; the reading-time
       table was all `ok` before the music was composed; the typing track was made from the
       final timeline.
 - [ ] Product screens are animated with `LaunchUI` (or follow its rules): `ellipsis` ran

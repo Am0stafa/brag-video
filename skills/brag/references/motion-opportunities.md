@@ -35,12 +35,12 @@ Rules, because a moving logo is still the brand:
 - **Short.** A logo move lasts 0.6–1.5 s, except one signature finale (the mascot carries
   the story's one key item through the flow and lands in the lockup).
 - **Match the rhythm.** Wing beats, sweeps and pulses land on the music's beats.
-- **The product's icon too.** In `launch` the logo also lives on the product's icon, the
-  tile that statements collapse into (launch-style.md, "The product's mark"). As the icon
-  lands, it plays the same motion in small: the wings beat once, the sweep turns, the
-  check draws, the horseshoe swings on its nail. Tween the statement's `glyph` (or its SVG
-  parts) from its `markAt`, and list it under `## Motion found` like any other. A product
-  with no logo gets the brand orb, whose breath is built in; list it as found too.
+- **The product's mark too.** In `launch` the statements condense into the bare logo
+  (launch-style.md, "The product's mark"). As it comes into focus, it plays the same motion
+  in small: the wings beat once, the sweep turns, the check draws, the horseshoe swings on
+  its nail. Tween the statement's `glyph` (or its SVG parts) from its `markAt`, and list it
+  under `## Motion found` like any other. Its glow breathes on its own. A product with no
+  logo gets the brand orb, whose breath is built in; list it as found too.
 
 ## The product itself
 
