@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- Test: the living backdrop behind the statements. Slats on a dark theme (the default there),
+     aurora on a light theme (the default there) and a grid in an app's own colours, each under a
+     lit word and a slot, joined by a cut and a focus pull, with the music's downbeat lifting the
+     light; then one backdrop shared by the root, over which a stage turns transparent, and a
+     bare logo's lockup on it. Every text colour must pass contrast on every sampled frame. -->
+<html lang="en" data-resolution="landscape">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<script src="assets/vendor/gsap.min.js"></script>
+<link rel="stylesheet" href="assets/launch/launch.css" />
+<script src="assets/launch/launch-text.js"></script>
+<script src="assets/launch/launch-motion.js"></script>
+<style>
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 600; font-display: block; src: url('assets/fonts/geist-600-normal-latin.woff2') format('woff2'); }
+:root { --lt-font: "Geist", sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000000; }
+#root { position: relative; width: 100%; height: 100%; }
+#world { position: absolute; inset: 0; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="21" data-width="1920" data-height="1080">
+  <div id="sSlats" class="lt-stage"></div>
+  <div id="sAurora" class="lt-stage"></div>
+  <div id="sGrid" class="lt-stage"></div>
+  <div id="world"><div id="sShared" class="lt-stage"></div></div>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+function build() {
+  const L = window.LaunchText, M = window.LaunchMotion;
+  const $ = (id) => document.getElementById(id);
+  const slats = $("sSlats"), aurora = $("sAurora"), grid = $("sGrid"), world = $("world"), shared = $("sShared");
+  const LOGO = '<svg viewBox="0 0 100 100" fill="none"><path d="M22 50 L44 72 L80 30" stroke="#22d3ee" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  L.music({ bpm: 124 });
+  // the global theme: dark, so "auto" gives slats; the stages below take their own
+  L.theme({ ...L.PRESETS.dark, accent: "#0a84f9" });
+  L.theme({ ...L.PRESETS.light, accent: "#e11d48" }, aurora);
+  L.theme({ bg: "#0b1220", ink: "#e8eef7", accent: "#22d3ee", backdrop: { kind: "grid", intensity: 1.2 } }, grid);
+  L.theme({ bg: "#101014", ink: "#f4f4f5", accent: "#f43f5e", backdrop: "slats", mark: { name: "Checkpoint", svg: LOGO, color: "#22d3ee" } }, world);
+  L.theme({ bg: "#101014", ink: "#f4f4f5", accent: "#f43f5e", backdrop: "slats", mark: { name: "Checkpoint", svg: LOGO, color: "#22d3ee" } }, shared);
+
+  const a = L.statement(tl, slats, { at: 0.2, lines: ["Every alert, {explained}"], hold: 1.4 });
+  const b = L.statement(tl, slats, { at: a.end + 1 / 30, lines: ["Triage by {slot}"], slot: ["severity", "owner", "asset"], hold: 1.3, exit: "none" });
+  M.cut(tl, { at: b.exitAt, from: slats, to: aurora });
+  const c = L.statement(tl, aurora, { at: b.exitAt, lines: ["Light, and still {alive}"], hold: 1.4, exit: "none" });
+  M.focus(tl, { at: c.exitAt, from: aurora, to: grid });
+  const d = L.statement(tl, grid, { at: c.exitAt + 0.4, lines: ["A grid for the {builders}"], flickerAll: true, hold: 1.4, exit: "none" });
+  // one backdrop on the whole world: the stage inside it turns transparent
+  L.backdrop(tl, world);
+  M.cut(tl, { at: d.exitAt, from: grid, to: world });
+  L.statement(tl, shared, { at: d.exitAt + 0.1, lines: ["One world under {everything}"], hold: 1.4, exit: "mark", markEnd: "lockup" });
+  window.__timelines["main"] = tl;
+}
+document.fonts.ready.then(build);
+</script>
+</body></html>

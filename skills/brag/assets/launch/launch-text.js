@@ -17,7 +17,10 @@
  *     which /brag never copies.
  *
  * Themes: light (the film's white canvas) by default, dark (the film's black scene), or the
- * app's own colours. Every text colour is fitted to at least 3.2:1 against the background.
+ * app's own colours. The canvas is never one flat colour: every stage gets a living backdrop
+ * drawn from its theme (glossy slats drifting at depth on a dark theme, soft glows of the brand
+ * colours on a light one, or a gliding grid), and every text colour is fitted to at least 3.2:1
+ * against the background and the brightest (or darkest) colour its backdrop can put behind it.
  * With LaunchText.music({ bpm }) (the soundtrack's tempo, or its cue file's beats), the brand orb
  * breathes on the beat.
  *
@@ -71,7 +74,8 @@
   }
   function isDark(bg) { return lum(rgb(bg)) < 0.18; }
   // Move a colour toward black (light background) or white (dark background) until it
-  // reaches the contrast needed for large text against every background given; the hue stays.
+  // reaches the contrast needed for large text against every background given (the canvas,
+  // and the brightest or darkest colours its backdrop can put behind the text); the hue stays.
   function fitAll(colour, backs, min, warn) {
     min = min || 3.2;
     var bg = backs[0];
@@ -121,31 +125,251 @@
    *   style: extra CSS for a tile, e.g. { boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }
    *   name: the product's name, for the "lockup" end
    */
-  function resolve(spec) {
+  function resolve(spec, inherit, quiet) {
     if (!spec) spec = "light";
     if (typeof spec === "string") spec = PRESETS[spec] || PRESETS.light;
     var bg = spec.bg || "#fdfdfd";
     var dark = isDark(bg);
-    var ink = spec.ink || (dark ? "#ffffff" : "#000000");
-    if (contrast(ink, bg) < 4.5) ink = fit(ink, bg, 4.5, true);
     var brand = spec.accent || "#0a84f9";
-    var accent = fit(brand, bg, 3.2, true);
+    var rawInk = spec.ink || (dark ? "#ffffff" : "#000000");
+    // the backdrop behind the statements, and the colours it can put behind the text
+    var bd = backdropSpec(spec.backdrop !== undefined ? spec.backdrop : inherit, dark);
+    var look = backdropLook(bd, bg, rawInk, brand, spec.palette, dark);
+    var backs = [bg].concat(look.peaks);
+    var ink = rawInk;
+    if (!backs.every(function (b) { return contrast(ink, b) >= 4.5; })) ink = fitAll(ink, backs, 4.5, !quiet);
+    var accent = fitAll(brand, backs, 3.2, !quiet);
     // light backgrounds start from the deepened text hues, dark ones from the film's own
     var hues = spec.palette || (dark ? FILM_HUES : LIGHT_TEXT);
-    var text = hues.map(function (c) { return fit(c, bg); });
+    var text = hues.map(function (c) { return fitAll(c, backs); });
     // the accent leads the flicker and is where the key word settles
     text = [accent].concat(text.filter(function (c) { return c.toLowerCase() !== accent.toLowerCase(); })).slice(0, 5);
-    return { bg: bg, ink: ink, accent: accent, brand: brand, text: text, mark: spec.mark || null, dark: dark };
+    return { bg: bg, ink: ink, accent: accent, brand: brand, text: text, mark: spec.mark || null, dark: dark,
+      backdrop: bd, look: look, backs: backs, rawBackdrop: spec.backdrop !== undefined ? spec.backdrop : inherit };
   }
 
-  var current = resolve("light");
+  // ---- the backdrop: the canvas behind the statements is never one flat colour ----
+  // Every stage that holds statements gets a living background drawn from its theme (its
+  // background, ink and brand colour), moving slowly on the video's own clock: glossy slats
+  // drifting at depth, soft glows of the brand colours, or a grid gliding toward the viewer.
+  // Every text colour is fitted against the brightest (dark theme) or darkest (light theme)
+  // colour the backdrop can put behind it, so the statements keep their contrast on every frame.
+  var BACKDROPS = { slats: 1, aurora: 1, grid: 1, flat: 1 };
+  function backdropSpec(b, dark) {
+    if (b === undefined || b === null || b === "auto" || b === true) b = {};
+    if (b === false || b === "none") b = { kind: "flat" };
+    if (typeof b === "string") b = { kind: b };
+    var kind = b.kind && b.kind !== "auto" ? b.kind : (dark ? "slats" : "aurora");
+    if (!BACKDROPS[kind]) throw new Error("launch-text: a backdrop is \"slats\", \"aurora\", \"grid\" or \"flat\", not \"" + kind + "\"");
+    return { kind: kind, intensity: b.intensity !== undefined ? Math.max(0, Math.min(1.6, +b.intensity)) : 1,
+      speed: b.speed !== undefined ? +b.speed : 1, seed: b.seed || 11, angle: b.angle !== undefined ? +b.angle : 42,
+      pulse: b.pulse !== false, colors: b.colors || null };
+  }
+  // a colour turned around the hue wheel by `deg`, for glows that sit beside the brand colour
+  function hueTurn(c, deg) {
+    var x = rgb(c).map(function (v) { return v / 255; });
+    var mx = Math.max(x[0], x[1], x[2]), mn = Math.min(x[0], x[1], x[2]), l = (mx + mn) / 2, d = mx - mn, h = 0, s = 0;
+    if (d > 1e-6) {
+      s = d / (1 - Math.abs(2 * l - 1));
+      h = mx === x[0] ? ((x[1] - x[2]) / d) % 6 : mx === x[1] ? (x[2] - x[0]) / d + 2 : (x[0] - x[1]) / d + 4;
+      h *= 60;
+    }
+    h = ((h + deg) % 360 + 360) % 360;
+    var C = (1 - Math.abs(2 * l - 1)) * s, X = C * (1 - Math.abs((h / 60) % 2 - 1)), m = l - C / 2;
+    var p = h < 60 ? [C, X, 0] : h < 120 ? [X, C, 0] : h < 180 ? [0, C, X] : h < 240 ? [0, X, C] : h < 300 ? [X, 0, C] : [C, 0, X];
+    return hex(p.map(function (v) { return (v + m) * 255; }));
+  }
+  var PULSE = 1.15;   // the music's downbeat lifts the backdrop's light this much at most
+  // the backdrop's colours, and `peaks`: the extremes it can put behind the text
+  function backdropLook(bd, bg, ink, brand, palette, dark) {
+    var k = bd.intensity, P = bd.pulse ? PULSE : 1;
+    if (bd.kind === "slats") {
+      // glossy bars: a highlight toward white (dark) or a soft shade toward black (light),
+      // tinted a little by the brand, and one faint brand glow drifting behind them
+      var lift = dark ? mix("#ffffff", brand, 0.14) : mix("#000000", brand, 0.25);
+      var hiA = (dark ? 0.26 : 0.085) * k;
+      var glowA = (dark ? 0.12 : 0.08) * k;
+      return { hi: mix(bg, lift, hiA), sh: mix(bg, lift, hiA * 0.22), glow: brand, glowA: glowA,
+        peaks: [mix(bg, lift, Math.min(1, hiA * P)), mix(bg, brand, glowA)] };
+    }
+    if (bd.kind === "aurora") {
+      var cols = (bd.colors || (palette && palette.length > 2 ? palette.slice(0, 3) : [brand, hueTurn(brand, 38), hueTurn(brand, -34)]))
+        .concat([mix(brand, dark ? "#ffffff" : "#000000", 0.25)]);
+      var a = (dark ? 0.2 : 0.14) * k;   // soft enough that a lit word in the brand colour still reads on its glow
+      var at = Math.min(0.85, 1 - Math.pow(1 - a * P, 2));   // two glows overlapping, on the beat
+      return { cols: cols, alpha: a, peaks: cols.map(function (c) { return mix(bg, c, at); }) };
+    }
+    if (bd.kind === "grid") {
+      var la = (dark ? 0.13 : 0.1) * k, ga = (dark ? 0.3 : 0.18) * k;
+      return { line: ink, lineA: la, glow: brand, glowA: ga,
+        peaks: [mix(mix(bg, brand, Math.min(1, ga * P)), ink, la)] };
+    }
+    return { peaks: [] };
+  }
+  // a deterministic random stream (no Math.random in a render)
+  function rng(seed) {
+    var s = (seed >>> 0) || 1;
+    return function () { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+  }
+  function rgba(c, a) { return "rgba(" + rgb(c).map(Math.round).join(",") + "," + Math.max(0, Math.min(1, a)).toFixed(3) + ")"; }
+  // how strongly the music's latest downbeat (every four beats) still lifts the light: 1 on it, fading
+  function pulseAt(t) {
+    if (!music) return 0;
+    var bar = 4 * music.beat;
+    if (t < music.offset - 1e-6) return 0;
+    var since = ((t - music.offset) % bar + bar) % bar;
+    return Math.exp(-since / 0.45);
+  }
+  /**
+   * backdrop(tl, host, [spec]) -> {el, kind} draws the living background inside `host` (a stage,
+   * a product scene, or the root) as its first child, and moves it on the video's clock from 0 to
+   * the end of the host's window. Statements give every stage its theme's backdrop on their own;
+   * call this for a product scene the product floats over, or once on the root before any
+   * statement for one backdrop shared by every scene (the stages then turn transparent, so focus
+   * pulls and cuts keep one continuous background). spec: "slats" | "aurora" | "grid" | "flat" |
+   * {kind, intensity, speed, seed, angle, pulse, colors}; default: the host's theme's backdrop.
+   */
+  function backdrop(tl, host, spec) {
+    var th = host.__ltTheme || current;
+    var bd = spec !== undefined ? backdropSpec(spec, th.dark) : th.backdrop;
+    var look = spec !== undefined ? backdropLook(bd, th.bg, th.ink, th.brand, null, th.dark) : th.look;
+    if (bd.kind === "flat") { host.__ltBd = null; return { el: null, kind: "flat" }; }
+    var W = host.clientWidth || 1920, H = host.clientHeight || 1080, s = W / 1920;
+    var layer = el("div", "lt-bd lt-bd-" + bd.kind);
+    layer.setAttribute("data-layout-ignore", "");   // decorative: its parts leave the frame on purpose
+    layer.style.background = th.bg;
+    var rand = rng(bd.seed), v = bd.speed, parts = [], draw;
+    var TAU2 = Math.PI * 2;
+    if (bd.kind === "slats") {
+      // glossy bars at depth, drifting along their length at different speeds, the whole field
+      // sliding slowly sideways; a bar that leaves the frame comes back from the other end unseen
+      var group = el("div", "lt-bd-group");
+      var diag = Math.sqrt(W * W + H * H);
+      group.style.transform = "translate(" + (W / 2).toFixed(1) + "px," + (H / 2).toFixed(1) + "px) rotate(" + bd.angle + "deg)";
+      var glow = el("i", "lt-bd-glow");
+      var gs = W * 0.7;
+      glow.style.width = glow.style.height = gs.toFixed(0) + "px";
+      glow.style.background = "radial-gradient(circle, " + rgba(look.glow, look.glowA) + " 0%, " + rgba(look.glow, 0) + " 68%)";
+      layer.appendChild(glow);
+      // the bars catch a pool of light that drifts slowly, so they read as solid shapes at depth
+      var lit = el("div", "lt-bd-lit");
+      var n = 9;
+      for (var i = 0; i < n; i++) {
+        var depth = rand(), thick = (130 + depth * 190) * s, len = (0.6 + rand() * 0.55) * diag;
+        var hi = mix(look.sh, look.hi, 0.45 + 0.55 * depth);
+        var bar = el("i", "lt-bd-slat");
+        bar.style.width = len.toFixed(0) + "px";
+        bar.style.height = thick.toFixed(0) + "px";
+        bar.style.borderRadius = (thick / 2).toFixed(0) + "px";
+        // round like a glossy cylinder: a broad lit face with a brighter band, falling into shade
+        bar.style.background = "linear-gradient(to bottom, " + rgba(look.sh, 0) + " 0%, " + look.sh + " 10%, " + mix(look.sh, hi, 0.55) +
+          " 26%, " + hi + " 40%, " + mix(look.sh, hi, 0.35) + " 62%, " + look.sh + " 84%, " + rgba(look.sh, 0) + " 100%)";
+        group.appendChild(bar);
+        parts.push({ el: bar, len: len, thick: thick, across: (i - (n - 1) / 2) * 250 * s + (rand() - 0.5) * 60 * s,
+          along: (rand() - 0.5) * diag, v: (14 + depth * 22) * s * v, R: diag / 2 + len / 2 + 60 * s });
+      }
+      lit.appendChild(group);
+      layer.appendChild(lit);
+      draw = function (t) {
+        var lift = 1 / PULSE + (1 - 1 / PULSE) * (bd.pulse ? pulseAt(t) : 0);
+        var slide = 9 * s * v * t;
+        var pool = "radial-gradient(ellipse 62% 78% at " + (50 + 16 * Math.sin(TAU2 * t * v / 37)).toFixed(1) + "% " +
+          (64 + 10 * Math.sin(TAU2 * t * v / 29 + 0.8)).toFixed(1) + "%, #000 0%, rgba(0,0,0,0.36) 100%)";
+        lit.style.webkitMaskImage = pool;
+        lit.style.maskImage = pool;
+        for (var k = 0; k < parts.length; k++) {
+          var p = parts[k], R = p.R;
+          var a = ((p.along + p.v * t + R) % (2 * R) + 2 * R) % (2 * R) - R;
+          var c = ((p.across + slide + diag * 0.6) % (diag * 1.2) + diag * 1.2) % (diag * 1.2) - diag * 0.6;
+          p.el.style.transform = "translate(" + (a - p.len / 2).toFixed(1) + "px," + (c - p.thick / 2).toFixed(1) + "px)";
+          p.el.style.opacity = lift.toFixed(3);
+        }
+        glow.style.transform = "translate(" + (W * (0.5 + 0.18 * Math.sin(TAU2 * t / 29 * v)) - gs / 2).toFixed(1) + "px," +
+          (H * (0.55 + 0.12 * Math.sin(TAU2 * t / 23 * v + 1.3)) - gs / 2).toFixed(1) + "px)";
+      };
+    } else if (bd.kind === "aurora") {
+      // soft glows of the brand's colours, each drifting on its own slow loop and breathing
+      var m = look.cols.length;
+      for (var j = 0; j < m; j++) {
+        var size = (0.55 + rand() * 0.45) * W;
+        var blob = el("i", "lt-bd-blob");
+        blob.style.width = blob.style.height = size.toFixed(0) + "px";
+        blob.style.background = "radial-gradient(circle, " + rgba(look.cols[j], look.alpha) + " 0%, " +
+          rgba(look.cols[j], look.alpha * 0.5) + " 34%, " + rgba(look.cols[j], 0) + " 68%)";
+        layer.appendChild(blob);
+        parts.push({ el: blob, size: size, x: (0.18 + rand() * 0.64) * W, y: (0.2 + rand() * 0.6) * H,
+          ax: (0.1 + rand() * 0.12) * W, ay: (0.08 + rand() * 0.1) * H, tx: 17 + rand() * 14, ty: 19 + rand() * 15,
+          px: rand() * TAU2, py: rand() * TAU2 });
+      }
+      draw = function (t) {
+        var lift = 1 / PULSE + (1 - 1 / PULSE) * (bd.pulse ? pulseAt(t) : 0);
+        for (var k = 0; k < parts.length; k++) {
+          var p = parts[k];
+          var x = p.x + p.ax * Math.sin(TAU2 * t * v / p.tx + p.px), y = p.y + p.ay * Math.sin(TAU2 * t * v / p.ty + p.py);
+          var sc = 1 + 0.08 * Math.sin(TAU2 * t * v / (p.tx * 1.3) + p.py);
+          p.el.style.transform = "translate(" + (x - p.size / 2).toFixed(1) + "px," + (y - p.size / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ")";
+          p.el.style.opacity = lift.toFixed(3);
+        }
+      };
+    } else {
+      // a floor grid gliding toward the viewer under a glow on the horizon
+      var cell = 96 * s, horizon = H * 0.64;
+      var hglow = el("i", "lt-bd-hglow");
+      hglow.style.width = (W * 1.3).toFixed(0) + "px";
+      hglow.style.height = (H * 0.7).toFixed(0) + "px";
+      hglow.style.transform = "translate(" + (-W * 0.15).toFixed(1) + "px," + (horizon - H * 0.35).toFixed(1) + "px)";
+      hglow.style.background = "radial-gradient(ellipse at 50% 50%, " + rgba(look.glow, look.glowA) + " 0%, " + rgba(look.glow, 0) + " 70%)";
+      var floor = el("i", "lt-bd-floor");
+      floor.style.width = (W * 3).toFixed(0) + "px";
+      floor.style.height = (H * 1.6).toFixed(0) + "px";
+      floor.style.transform = "translate(" + (-W).toFixed(1) + "px," + horizon.toFixed(1) + "px) perspective(" + (H * 0.55).toFixed(0) + "px) rotateX(64deg)";
+      var line = rgba(look.line, look.lineA), lw = Math.max(1.5, 2 * s).toFixed(1);
+      floor.style.backgroundImage = "linear-gradient(" + line + " " + lw + "px, transparent " + lw + "px), " +
+        "linear-gradient(90deg, " + line + " " + lw + "px, transparent " + lw + "px)";
+      floor.style.backgroundSize = cell.toFixed(1) + "px " + cell.toFixed(1) + "px";
+      layer.appendChild(hglow);
+      layer.appendChild(floor);
+      draw = function (t) {
+        var lift = 1 / PULSE + (1 - 1 / PULSE) * (bd.pulse ? pulseAt(t) : 0);
+        floor.style.backgroundPosition = "0px " + ((t * 40 * s * v) % cell).toFixed(2) + "px";
+        hglow.style.opacity = lift.toFixed(3);
+      };
+    }
+    if (th.dark) layer.appendChild(el("i", "lt-bd-vignette"));   // depth: darker toward the edges
+    host.insertBefore(layer, host.firstChild);
+    draw(0);
+    var tEnd = windowEnd(host, 0), proxy = { t: 0 };
+    tl.to(proxy, { t: tEnd, duration: Math.max(FRAME, tEnd), ease: "none", immediateRender: false,
+      onUpdate: function () { draw(proxy.t); } }, 0);
+    host.__ltBd = { el: layer, kind: bd.kind };
+    return { el: layer, kind: bd.kind };
+  }
+  // A stage gets its theme's backdrop the first time it shows something, unless an ancestor
+  // already holds a shared one: then the stage turns transparent over it.
+  function ensureBackdrop(tl, stage, th) {
+    if (stage.__ltBd !== undefined) return;
+    for (var p = stage.parentElement; p; p = p.parentElement) {
+      if (p.__ltBd) { stage.__ltBd = null; stage.style.background = "transparent"; return; }
+    }
+    if (th.backdrop.kind === "flat") { stage.__ltBd = null; return; }
+    var own = stage.__ltTheme;
+    stage.__ltTheme = th;   // draw it in the theme the statements use
+    backdrop(tl, stage);
+    stage.__ltTheme = own;
+  }
+
+  var current = resolve("light", undefined, true);   // the default, quiet until a composition picks its own
 
   /**
    * theme(spec, [el]) sets the theme for the statements that follow (or, with el, for one stage)
    * and writes --lt-bg, --lt-ink and --lt-accent on the root (or on el). Returns the resolved theme.
+   * spec.backdrop picks the living background behind the statements: "auto" (the default: slats
+   * on a dark theme, aurora on a light one), "slats", "aurora", "grid", "flat" (only when asked),
+   * or {kind, intensity (0–1.6, default 1), speed, seed, angle, pulse, colors}. A stage's theme
+   * with no backdrop of its own takes the global theme's choice.
    */
   function theme(spec, el) {
-    var th = resolve(spec);
+    var th = resolve(spec, el ? current.rawBackdrop : undefined);
     var target = el || document.documentElement;
     target.style.setProperty("--lt-bg", th.bg);
     target.style.setProperty("--lt-ink", th.ink);
@@ -472,13 +696,13 @@
     var unit = opts.unit || "word";
     var rate = opts.rate || 30;
     var caretOn = opts.caret !== undefined ? opts.caret : unit === "char";
-    var ink = opts.ink ? fit(opts.ink, th.bg, 4.5, true) : th.ink;
-    var accent = opts.accent ? fit(opts.accent, th.bg, 3.2, true) : th.accent;
+    var ink = opts.ink ? fitAll(opts.ink, th.backs, 4.5, true) : th.ink;
+    var accent = opts.accent ? fitAll(opts.accent, th.backs, 3.2, true) : th.accent;
     var palette = [accent].concat(th.text.filter(function (c) { return c !== accent; })).slice(0, 5);
     var flicker = opts.flicker !== undefined ? opts.flicker : 1.0;
     var flickerAll = !!opts.flickerAll;
     var slot = opts.slot || null;
-    var slotColors = (opts.slotColors || palette).map(function (c) { return fit(c, th.bg); });
+    var slotColors = (opts.slotColors || palette).map(function (c) { return fitAll(c, th.backs); });
     var slotHold = opts.slotHold !== undefined ? opts.slotHold : 0.37;
     var think = opts.think || null;
     var hold = opts.hold !== undefined ? opts.hold : 1.4;
@@ -490,6 +714,7 @@
     var maxW = (opts.maxWidth || 0.8) * W;
     var yOff = opts.y || 0;
     var rawLines = (opts.lines || [""]).slice();
+    ensureBackdrop(tl, stage, th);   // the living background behind the statements
     // an icon an earlier statement left on this stage (keep, lockup, fill) gives way to this one
     if (stage.__ltKept && stage.__ltKept.from < at) {
       stage.__ltKept.els.forEach(function (e) { tl.set(e, { visibility: "hidden" }, at); });
@@ -950,6 +1175,7 @@
   function mark(tl, stage, opts) {
     opts = opts || {};
     var th = opts.theme ? resolve(opts.theme) : (stage.__ltTheme || current);
+    ensureBackdrop(tl, stage, th);
     var W = stage.clientWidth || 1920, H = stage.clientHeight || 1080;
     var at = opts.at || 0;
     var stays = !!opts.keep;
@@ -1000,8 +1226,9 @@
   }
 
   window.LaunchText = {
-    statement: statement, mark: mark, dot: mark /* the older name, now the product icon */,
-    theme: theme, resolve: resolve, fit: fit, contrast: contrast, mix: mix, music: setMusic,
+    statement: statement, mark: mark, dot: mark /* the older name, now the product's logo */,
+    backdrop: backdrop,
+    theme: theme, resolve: resolve, fit: fit, fitAll: fitAll, contrast: contrast, mix: mix, music: setMusic,
     // the first beat of the music at or after t (t itself without music): lock cuts to it
     nextBeat: function (t) { return music ? nextBeat(t) : t; },
     current: function () { return current; },

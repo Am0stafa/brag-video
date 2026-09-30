@@ -41,6 +41,7 @@ Everything is plain words. Take these from the prompt; when something isn't said
 | Sound effects | "no sound effects", "no typing sound" | on: bundled first; generated or sourced when nothing fits; with `launch`, a deep key sound on every typed piece |
 | Tone | "OpenAI-style", "Apple keynote", "playful", "serious", "like a trailer", "for the sprint review" | `launch`: typed statements, one lit word, the film's transitions (see Tones) |
 | Theme | "dark", "light", "on white", "in our brand colours" | the app's own: its background, text and brand colour, light or dark |
+| Background | "flat background", "plain background", "no moving background", "with a grid", "soft glows" | a slow living backdrop behind the statements, drawn from the app's colours: glossy slats on a dark theme, soft brand glows on a light one (launch-style.md, "The backdrop") |
 | Motion | "keep the logo still", "no animation on the charts" | everything that naturally moves is animated without asking: a bird's wings, a radar's sweep, counts, charts, scans (references/motion-opportunities.md) |
 | Length | "30 seconds", "under a minute", "full"; "quick", "a quick demo", "quick version", "short" | the full video: everything, at most 117 s; the quick words → the quick version, 27–47 s, still everything |
 | Format | "vertical", "for Reels / TikTok / Shorts" → 1080×1920; "square" → 1080×1080 | landscape 1920×1080, 30 fps |
@@ -153,7 +154,7 @@ Tones are vocabulary for pacing and style; the prompt picks one in words ("like 
 
 | Tone | Feel | Good for |
 |---|---|---|
-| **`launch`** (default) | Statements that stream in like a model's answer, in the app's own theme; one lit word flickering through colour; a deep key sound on every typed piece; the product's bare logo coming into focus and opening scenes like an app, warps and camera moves; a close on the logo beside the product's name | every video, unless the prompt asks for another tone; "OpenAI-style" |
+| **`launch`** (default) | Statements that stream in like a model's answer, in the app's own theme, over a slow living backdrop; one lit word flickering through colour; a deep key sound on every typed piece; the product's bare logo coming into focus and opening scenes like an app, warps and camera moves; a close on the logo beside the product's name | every video, unless the prompt asks for another tone; "OpenAI-style" |
 | `polished` | Serious, elegant, restrained | "like an Apple keynote", premium products |
 | `ai-demo` | Dark, calm keynote; typed prompt → thinking → cited answer | "show it thinking", agent demos |
 | `app-store` | Smooth feature cards | "clean feature cards" |

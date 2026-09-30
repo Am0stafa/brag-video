@@ -322,7 +322,8 @@ docker run --rm -v "<skill-dir>/scripts":/skill:ro -v "$OUT":/work -w /work brag
 
 ## 7. Audio-reactive background (optional)
 
-Optional, and off for `launch` (its canvas stays flat). For other tones, when a scene
+In `launch`, the backdrop already breathes with the music: each bar's downbeat lifts its
+light (launch-style.md, "The backdrop"), so nothing more is needed. For other tones, when a scene
 feels static, one existing element may breathe with the music: the background glow, a
 light wash, the card's presence. Never use waveform or equalizer graphics, and drive it
 from a proxy tween's time like every other motion here (not from per-frame `tl.call()`
@@ -370,7 +371,8 @@ stranger and better than the invented version.
 - [ ] With `launch`: the statements use the app's theme; the theme has the product's
       mark (its bare logo in its own colours, with no tile unless the user asked for the app
       icon, or the brand orb when it has none; its brand colour; its name), and the logo
-      plays its motion; there is no colour-cycling dot; the reading-time
+      plays its motion; the statements sit on a backdrop (not one flat colour, unless the
+      prompt asked); there is no colour-cycling dot; the reading-time
       table was all `ok` before the music was composed; the typing track was made from the
       final timeline.
 - [ ] Product screens are animated with `LaunchUI` (or follow its rules): `ellipsis` ran

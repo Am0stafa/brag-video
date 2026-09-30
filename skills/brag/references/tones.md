@@ -6,7 +6,7 @@ Ten tones. Each changes scripting energy, pacing, typography personality, and tr
 
 ## `launch` (the default)
 
-**Energy:** Bright, fast, confident. Big statements typed onto a flat canvas, one idea at a time, each typed piece landing with a deep "key" sound, driven by an energetic electronic beat. This is how modern AI product launch films write on screen. The full spec, measured frame by frame, is in [launch-style.md](launch-style.md).
+**Energy:** Bright, fast, confident. Big statements typed onto a living canvas (a slow backdrop drawn from the app's colours: glossy slats on dark, soft brand glows on light), one idea at a time, each typed piece landing with a deep "key" sound, driven by an energetic electronic beat. This is how modern AI product launch films write on screen. The full spec, measured frame by frame, is in [launch-style.md](launch-style.md).
 
 **Voice:** Short statements in sentence case, second person, 2–7 words per line, at most two lines. Parallel frames with a cycling last word ("Match on ___"). Full stops only on complete sentences.
 

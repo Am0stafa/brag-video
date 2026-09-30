@@ -8,7 +8,8 @@ the same Docker image the skill uses, never on your Mac.
 |---|---|
 | `compositions/kit.html` | the product-screen kit: a statement that stays and gives way, a gradient icon filling the frame, a circle reveal, a 1280×720 console at 1.5× with a dialog, typing, counters, a status swap, labels cut with "…", a cursor with clicks, the "Sample data" label, a phone tap, a screen wall of 24 screens, and an app icon with its own tile in the lockup |
 | `compositions/transitions.html` | `exit: "none"` followed by another statement on the same stage, then a focus pull and a circle reveal between scenes whose text sits in the same place |
-| `compositions/marks.html` | the product's icon as an app icon with its own tile (opening a scene) and as a gradient tile (filling the frame) |
+| `compositions/marks.html` | the product's mark in every form: the bare logo coming into focus (in the lockup and filling the frame), an app icon with its own tile (opening a scene), a gradient tile (filling the frame), the older "pop" landing, and the brand orb |
+| `compositions/backdrops.html` | the living backdrop behind the statements: slats, aurora and grid under lit words and slots, a cut and a focus pull between them, the music's downbeat pulse, and one backdrop shared by a whole world with a bare-logo lockup on it |
 | `../skills/brag/assets/launch/example.html` | the skill's own working example |
 
 Each page must pass four checks:
@@ -35,6 +36,8 @@ docker run --rm --shm-size=2g -v "$PWD":/repo -w /repo brag-tools:0.8.91-r3 sh t
 - **What it does:** it mounts this repository into the image and runs `tests/run-tests.sh`
   there. For each page, the script copies the blank template, adds the engine and the Geist
   font, and runs the four checks.
+- **One page only:** add the page names after the script, for example
+  `sh tests/run-tests.sh marks backdrops`.
 - **Expected output:** one block per page, each line `ok` (for example
   `frame order: 130 times x 3 orders (3122 visible element states compared): 0 times differ`),
   then `all tests passed`, with exit code 0. It takes a few minutes.

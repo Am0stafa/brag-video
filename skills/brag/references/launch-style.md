@@ -2,7 +2,7 @@
 
 `launch` is the default tone for every /brag video unless the prompt asks for another
 (`polished`, `app-store`, `changelog`, `cinematic`… all stay available). It is the way
-modern AI product launch films write on screen: big statements typed onto a flat canvas,
+modern AI product launch films write on screen: big statements typed onto a living canvas,
 one idea at a time, one word lit up in colour, a deep "key" sound on every typed piece,
 and a small set of sharp transitions. Its signature is the product's own logo, shown bare
 the way the product shows it: statements condense into it as it comes into focus, it opens
@@ -28,7 +28,7 @@ label and the screen wall. A working example is `assets/launch/example.html`.
 
 | Element | Value (measured) | In /brag |
 |---|---|---|
-| Canvas | flat near-white `#fdfdfd`; one scene in pure black `#000000` | **the app's own theme** (below); the film's white when the app is light and has no background of its own |
+| Canvas | flat near-white `#fdfdfd`; one scene in pure black `#000000` | **the app's own theme** (below), never one flat colour: a slowly moving backdrop drawn from it sits behind every statement ("The backdrop", below) |
 | Ink | pure black on white; pure white on black | the app's main text colour |
 | Statement size | cap height 86 px on 1080p (≈ 118 px type, 11% of the frame height) | engine default: 6.15% of the frame width |
 | Weight | semibold (stems ≈ 0.2 of the cap height) | 600 |
@@ -63,6 +63,47 @@ the warnings); pick another accent from the app's palette then. Keep one theme f
 statements of a video, and switch only at a transition (the logo opening into a dark
 scene, a warp back out), like the film does once. Product UI scenes always show the app as
 it is.
+
+### The backdrop: the canvas is never one flat colour
+
+The film types onto a flat colour. /brag doesn't: a flat single-colour background is the
+one thing users of the first version asked to lose, and the best product films put their
+words over a background that moves. So every stage that
+holds statements gets a **backdrop**: a slow, soft, living background drawn from the
+theme's own background, ink and brand colour, under exactly the same typing, lit word,
+key sound and type. The words stay the style; only the canvas comes alive.
+
+| Backdrop | What it is | When |
+|---|---|---|
+| `slats` | glossy rounded bars at a diagonal, at different depths, drifting slowly along their length while the whole field slides sideways, catching a pool of light that wanders; a faint glow of the brand colour behind them and a soft vignette | the default on a **dark** theme; developer, security, trading and media tools |
+| `aurora` | soft glows of the brand colour and two colours beside it on the colour wheel (or the app's `palette`), each drifting on its own slow loop and breathing | the default on a **light** theme; consumer, health, finance, design products |
+| `grid` | a floor grid gliding toward the viewer under a glow of the brand colour on the horizon | developer tools, infrastructure, anything "platform" |
+| `flat` | the plain canvas | only when the prompt asks ("flat background", "plain", "no background animation") |
+
+- **It is on by default.** `theme({ …, backdrop: "auto" })` is the default: `slats` on a
+  dark theme, `aurora` on a light one. Pick another from the product's mood with
+  `backdrop: "grid"`, or tune it: `{ kind, intensity (0–1.6, default 1), speed (default 1),
+  seed, angle (slats, default 42°), pulse, colors (aurora) }`. A stage's own theme with no
+  backdrop takes the global choice, adapted to its colours.
+- **It breathes with the music.** Once the engine has the beats (`LaunchText.music`), each
+  bar's downbeat lifts the backdrop's light a little (up to 15%), fading within half a
+  second. Turn it off with `pulse: false`.
+- **The text keeps its contrast.** Every colour the engine fits (ink, accent, the flicker
+  palette, slot colours) is fitted against the background *and* the brightest (dark
+  theme) or darkest (light theme) colour the backdrop can put behind it, at the peak of the
+  pulse. So `hyperframes check` passes with the backdrop moving. If a brand colour had to
+  move a lot to read on its own glow, the console says so: lower `intensity`, or pick
+  another accent.
+- **One world, if you like.** Each stage draws its own copy from the video's clock, so a
+  cut between two stages with the same backdrop is seamless. For a video that lives in one
+  continuous space (titles, product windows and the close all floating over the same moving
+  background), put a single backdrop on a container before any
+  statement, `LaunchText.backdrop(tl, world)`; the stages inside it turn transparent over
+  it, and focus pulls keep it sharp. A product scene can have one too
+  (`LaunchText.backdrop(tl, uiScene)`), with the product floating over it as a window.
+- **Seek-safe.** Every part is placed from the time alone by one clock that runs from the
+  video's start to its end, so any frame draws the same in any order. The layer is
+  decorative and marked `data-layout-ignore`: its parts leave the frame on purpose.
 
 **Colour.** One small palette drives the lit word, its flicker and the slot candidates:
 
@@ -335,7 +376,8 @@ resets, and one app open at most.
    → product). Use `LaunchMotion.cut` for a hard cut between scenes, and build the
    transitions in time order. Timed `.clip` scenes work too; Hyperframes then shows and
    hides them, so give them windows that end where their outgoing transition ends.
-4. In `build()` (after `document.fonts.ready`), set the theme, give the engine the plan's
+4. In `build()` (after `document.fonts.ready`), set the theme (its backdrop comes with it:
+   `auto` unless the plan picked `slats`, `aurora`, `grid` or, when asked, `flat`), give the engine the plan's
    beat grid (`LaunchText.music({ bpm })` with the plan's tempo, or a bundled track's cue
    file `tempo` and `beats`; step-3-compose.md, "Beat sync"), then chain statements and
    transitions; each returns its `end`. Put each statement's `at` on a beat
@@ -345,7 +387,7 @@ resets, and one app open at most.
 ```js
 const L = window.LaunchText, M = window.LaunchMotion;   // Horse Tinder: a fictional app
 const mark = { name: "Horse Tinder", color: "#4f8cff", svg: HORSESHOE_SVG };  // its logo, in its own colours
-L.theme({ ...L.PRESETS.light, mark });                   // or the app's {bg, ink, accent, mark}
+L.theme({ ...L.PRESETS.light, mark });                   // or the app's {bg, ink, accent, mark, backdrop}
 L.theme("dark", dark);                                   // one scene in the other theme
 const a = L.statement(tl, light, { at: 0.1, lines: ["Horse Tinder for {Riders}"] });
 const b = L.statement(tl, light, { at: a.end + 1 / 30, lines: ["Match on {slot}"],
@@ -399,6 +441,9 @@ its stage), `markEnd` (`hide`, `keep`, `lockup` + `name`, `open` + `next`, `fill
 (`true`, or `"own"` for an app icon with its own tile), `background`, `radius`, `style` and
 `land` (`"pop"` for the older landing).
 `LaunchText.mark(tl, stage, {at, x, y, hold, keep})` shows the logo on its own.
+The theme takes `backdrop` (`auto`, `slats`, `aurora`, `grid`, `flat`, or `{kind, intensity, speed,
+seed, angle, pulse, colors}`), and `LaunchText.backdrop(tl, host, [spec])` draws one on any
+container: a product scene, or a world shared by every stage.
 `LaunchText.music({bpm, offset} | {bpm, beats})` gives it the music's beats, and
 `LaunchText.nextBeat(t)` returns the first beat at or after `t`. `LaunchText.timing()`
 returns the reading-time rows that `launch_events.cjs` prints.
@@ -429,6 +474,8 @@ audited again from the transition's end. The warp's streak layer is never audite
 ## Don't
 
 - Fade, blur, slide or bounce individual words in. Only the layout moves.
+- Type onto one flat colour. The backdrop stays on unless the prompt asks for a plain
+  background, and it stays slow and soft: it is the canvas, never the subject.
 - Light up more than one word per statement, or use gradient text.
 - Centre each line separately. Lines are left-aligned in a centred block.
 - Write three lines, or long sentences. Split them into two statements.

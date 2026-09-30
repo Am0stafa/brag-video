@@ -58,6 +58,7 @@ solves and for whom.]
 [From step 1.]
 - Background / surfaces / text / accent / status colors: [hex values; the source's oklch/hsl alongside]
 - Theme: [light / dark] — statements on [background] with [text] and [brand accent]
+- Backdrop (`launch`): [auto (slats on dark, aurora on light) / slats / aurora / grid; flat only when the prompt asks] — why it fits the product
 - Fonts: [display, body, data; embedded locally from …]
 - Logo: [file; animated or not]
 - Product's mark (`launch`): [the bare logo in its own colours (no tile unless asked), or "no logo: the brand orb"; the brand colour for its glow; the name for the lockup]

@@ -1,7 +1,7 @@
 /* launch.css: the look of /brag's default "launch" style (see references/launch-style.md).
-   Statements in a semibold sans on a flat canvas: the film's near-white by default, black for
+   Statements in a semibold sans on a living canvas: the film's near-white by default, black for
    a dark scene, or the app's own background (LaunchText.theme sets --lt-bg, --lt-ink,
-   --lt-accent). Left-aligned lines in a block that stays centred, a thin ink caret, accent
+   --lt-accent), with a slowly moving backdrop drawn from those colours. Left-aligned lines in a block that stays centred, a thin ink caret, accent
    thinking dots, and the product's mark (its logo, bare, coming into focus with a soft glow); plus the
    cursor, tap and "Sample data" label of launch-ui.js. Set the project's own font through
    --lt-font (embed it with @font-face); Geist SemiBold is the closest free match to the
@@ -11,6 +11,56 @@
   inset: 0;
   overflow: hidden;
   background: var(--lt-bg, #fdfdfd);
+}
+/* the living backdrop behind the statements (launch-text.js draws and moves its parts): the
+   stage's first child, under everything else on it */
+.lt-bd {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.lt-bd i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  will-change: transform;
+}
+/* the pool of light the slats catch (launch-text.js moves its mask) */
+.lt-bd-lit {
+  position: absolute;
+  inset: 0;
+}
+.lt-bd-group {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+/* a glossy slat fades out toward both ends */
+.lt-bd-slat {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+.lt-bd-blob,
+.lt-bd-glow {
+  border-radius: 50%;
+}
+/* the grid fades out toward its horizon */
+.lt-bd-floor {
+  transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+}
+/* depth on a dark backdrop: darker toward the edges */
+.lt-bd .lt-bd-vignette {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  background: radial-gradient(ellipse at 50% 46%, rgba(0, 0, 0, 0) 48%, rgba(0, 0, 0, 0.5) 100%);
 }
 .lt-block {
   position: absolute;
