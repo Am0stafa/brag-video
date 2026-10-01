@@ -34,7 +34,10 @@ docker run --rm --shm-size=2g -v "$OUT":/work -w /work/composition brag-tools:0.
 
 Look at the contact sheet: `composition/snapshots/contact-sheet.jpg`, or
 `contact-sheet-1.jpg … -N.jpg` for many frames. Then look at single frames only where
-something looks wrong. Every snapshot run empties the folder, so copy a sheet into
+something looks wrong. With `launch`, also check the look: no statement sits on one flat colour
+(unless the prompt asked), the logo stands bare (no tile unless asked), the product is in its
+context, every title card's product is blurred and dim enough for the title to read, and the
+recap names every feature on the coverage list. Every snapshot run empties the folder, so copy a sheet into
 `review/` if you want to keep it. A frame that is plain white except for emoji is a
 snapshot glitch: re-take it in a small batch, or check that moment in the render. Fix,
 re-check, re-snapshot the fixed moments, and delete `composition/snapshots/` before
@@ -118,7 +121,7 @@ Pick the poster, the frame shown before the video plays. It must be a **settled*
 (text fully in, nothing mid-transition) that works on its own and names the product:
 
 - product demo → a frame that names the product: the title card or the logo lockup (in
-  `launch`, the settled lockup: the product's icon beside its name), or a settled UI frame
+  `launch`, the settled lockup: the product's logo beside its name), or a settled UI frame
   with the name visible;
 - feature brag → the *after* state with the feature's name (a frozen "before" is a
   screenshot of the bug);
@@ -216,7 +219,7 @@ say. Choose them from what this video actually is; never a fixed list:
   own scene"; one feature with more to it → "go deeper on [feature]" (a second use, an
   edge case).
 - **Look:** the other theme ("try the light version"), the brand colour as the lit word,
-  the icon's ending (the lockup, or a fill into the brand colour), the logo's motion
+  the logo's ending (the lockup, or a fill into the brand colour), the logo's motion
   switched off or made bigger.
 
 Write each as a question with its sentence ready to copy:

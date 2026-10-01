@@ -1,0 +1,216 @@
+<!doctype html>
+<!-- The showcase layer in one composition: a working example for /brag (references/launch-style.md,
+     "The showcase layer"). Beacon is a fictional menu-bar app for service status.
+
+     What it shows, in the order the reference product films use:
+       1. one world: a single backdrop on a container holds every scene (LaunchText.backdrop), so
+          the statements, the product and the close all float over the same moving background;
+       2. the hook as a statement that condenses into the bare logo, which opens into the product
+          in its context: the top of a laptop screen with its menu bar and notch (.lu-laptop);
+       3. a feature tour: each feature gets a title card with its counter ("01 / 04") typed over the
+          product, blurred and dimmed under a veil (LaunchMotion.veil), then the feature in use: a
+          popover that morphs out of its menu-bar item with a highlight stepping through its rows
+          (LaunchMotion.morph, LaunchUI.select), the notch opening into a panel, a toggle and its
+          toast, notifications arriving; the camera pushes in on each and pulls back;
+       4. the recap: every feature as a tile, coming into focus one after another (.lu-recap,
+          LaunchUI.show with blur);
+       5. the end card: the logo, the name typed in, the tagline, the call to action and the site
+          (LaunchText.endcard).
+     Build it like example.html: copy assets/launch/ into composition/assets/launch/, embed the fonts,
+     and check the reading time before composing the music:
+       node /skill/launch_events.cjs composition/index.html -->
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/launch/launch.css" />
+    <script src="assets/launch/launch-text.js"></script>
+    <script src="assets/launch/launch-motion.js"></script>
+    <script src="assets/launch/launch-ui.js"></script>
+    <style>
+      @font-face { font-family: 'Geist'; font-style: normal; font-weight: 600; font-display: block; src: url('assets/fonts/geist-600-normal-latin.woff2') format('woff2'); }
+      :root { --lt-font: "Geist", sans-serif; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0f1115; }
+      #root { position: relative; width: 100%; height: 100%; }
+      #world, .scene, #macView { position: absolute; inset: 0; overflow: hidden; }
+      /* the product, rebuilt at its real size inside the laptop's screen */
+      #mac { left: 260px; top: 150px; width: 1400px; height: 1000px; --lu-screen-bg: linear-gradient(160deg, #1d2030 0%, #12141b 60%, #0f1116 100%);
+        --lu-menubar-bg: #191b22; --lu-menubar-ink: #e5e7eb; }
+      .lu-menubar .sp { flex: 1; }
+      #mbIcon { display: grid; place-items: center; width: 34px; height: 26px; border-radius: 7px; }
+      #mbIcon svg { width: 20px; height: 20px; }
+      .ui { font-family: "Geist", sans-serif; color: #e5e7eb; }
+      .card { position: absolute; background: #17181d; border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+      #pop { left: 840px; top: 42px; width: 500px; height: 330px; }
+      #pop h5, #panel h5, #prefs h5 { position: absolute; left: 24px; top: 18px; font-size: 16px; font-weight: 600; color: #a1a1aa; }
+      .row { position: absolute; left: 14px; right: 14px; height: 56px; padding: 0 16px; display: flex; align-items: center; gap: 12px; font-size: 19px; font-weight: 600; }
+      .row .dot { width: 10px; height: 10px; border-radius: 50%; background: #4ade80; flex: none; }
+      .row .v { margin-left: auto; color: #a1a1aa; }
+      .row.warn .dot { background: #fbbf24; }
+      .row.warn .v { color: #fbbf24; }
+      #sel { background: #2b2540; border-radius: 10px; }
+      #panel { left: 364px; top: 0; width: 640px; height: 420px; background: #0b0b0c; border-radius: 0 0 30px 30px; }
+      .ev { position: absolute; left: 28px; right: 28px; height: 58px; display: flex; align-items: center; gap: 16px; font-size: 19px; font-weight: 600; }
+      .ev time { color: #a1a1aa; width: 64px; }
+      .ev i { width: 12px; height: 12px; border-radius: 50%; background: #a78bfa; flex: none; }
+      #prefs { left: 434px; top: 300px; width: 500px; height: 230px; }
+      #prefs .line { position: absolute; left: 24px; right: 24px; top: 70px; font-size: 22px; font-weight: 600; }
+      #prefs .hint { position: absolute; left: 24px; top: 110px; font-size: 17px; color: #a1a1aa; }
+      #toggle { position: absolute; right: 24px; top: 66px; width: 64px; height: 36px; border-radius: 18px; background: #3f3f46; }
+      #knob { position: absolute; left: 4px; top: 4px; width: 28px; height: 28px; border-radius: 50%; background: #ffffff; }
+      #toast { left: 474px; top: 560px; width: 420px; height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 19px; font-weight: 600; }
+      #toast i { width: 12px; height: 12px; border-radius: 50%; background: #a78bfa; flex: none; }
+      .note { right: 24px; width: 420px; height: 96px; padding: 18px 20px; }
+      .note b { display: block; font-size: 17px; color: #a1a1aa; }
+      .note span { display: block; margin-top: 8px; font-size: 20px; font-weight: 600; }
+      .lu-chip-icon { background: #2b2540; }
+      .lu-chip-icon svg { stroke: #c4b5fd; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="35" data-width="1920" data-height="1080">
+      <div id="world">
+        <div id="sOpen" class="lt-stage"></div>
+        <div id="sMac" class="scene">
+          <div id="macView" data-layout-allow-overflow>
+            <div id="mac" class="lu-laptop">
+              <div class="lu-screen ui">
+                <div class="lu-menubar"><span>Beacon</span><span>File</span><span>Edit</span><span>View</span><span class="sp"></span>
+                  <span id="mbIcon"></span><span>9:41 AM</span></div>
+                <div class="lu-notch"></div>
+                <div id="pop" class="card">
+                  <div id="sel" class="lu-select"></div>
+                  <h5>Services</h5>
+                  <div class="row" style="top: 56px"><i class="dot"></i>api-gateway<span class="v">99.98%</span></div>
+                  <div class="row" style="top: 120px"><i class="dot"></i>checkout<span class="v">99.95%</span></div>
+                  <div class="row warn" style="top: 184px"><i class="dot"></i>search<span class="v" id="lat">0 ms</span></div>
+                  <div class="row" style="top: 248px"><i class="dot"></i>billing<span class="v">100%</span></div>
+                </div>
+                <div id="panel" class="card">
+                  <h5>Incident: search latency</h5>
+                  <div class="ev" style="top: 70px"><time>12:04</time><i></i>Latency rising on search</div>
+                  <div class="ev" style="top: 150px"><time>12:06</time><i></i>On-call paged: Maya</div>
+                  <div class="ev" style="top: 230px"><time>12:09</time><i></i>Rollback started</div>
+                  <div class="ev" style="top: 310px"><time>12:11</time><i></i>Resolved in 7 minutes</div>
+                </div>
+                <div id="prefs" class="card">
+                  <h5>Settings</h5>
+                  <div class="line">Quiet hours</div>
+                  <div class="hint">22:00 to 07:00, weekdays</div>
+                  <div id="toggle"><div id="knob"></div></div>
+                </div>
+                <div id="toast" class="card"><i></i>Paging paused until 07:00</div>
+                <div id="n1" class="card note" style="top: 60px"><b>Beacon · search</b><span>Degraded, Maya paged</span></div>
+                <div id="n2" class="card note" style="top: 176px"><b>Beacon · search</b><span>Resolved in 7 minutes</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="sTitle" class="lt-stage lt-over"></div>
+        <div id="sRecap" class="lt-stage">
+          <div id="recap" class="lu-recap" style="left: 240px; top: 470px; width: 1440px">
+            <div class="lu-chip"><span class="lu-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>Live status</div>
+            <div class="lu-chip"><span class="lu-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 6h14M5 12h10M5 18h6"/></svg></span>Incident timeline</div>
+            <div class="lu-chip"><span class="lu-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 14A7 7 0 0 1 10 6a7 7 0 1 0 8 8z"/></svg></span>Quiet hours</div>
+            <div class="lu-chip"><span class="lu-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/></svg></span>Team alerts</div>
+          </div>
+        </div>
+        <div id="sEnd" class="lt-stage"></div>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      function build() {
+        const L = window.LaunchText, M = window.LaunchMotion, U = window.LaunchUI, F = 1 / 30;
+        const $ = (id) => document.getElementById(id);
+        const world = $("world"), open = $("sOpen"), macScene = $("sMac"), view = $("macView");
+        const title = $("sTitle"), recapStage = $("sRecap"), end = $("sEnd");
+        U.ellipsis(view);
+        // the logo: a beacon, in its own colours, bare on the canvas
+        const LOGO = '<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="66" r="10" fill="#a78bfa"/>' +
+          '<path class="w1" d="M33 50 A24 24 0 0 1 67 50" stroke="#a78bfa" stroke-width="8" stroke-linecap="round"/>' +
+          '<path class="w2" d="M20 36 A42 42 0 0 1 80 36" stroke="#8b5cf6" stroke-width="8" stroke-linecap="round"/></svg>';
+        $("mbIcon").innerHTML = LOGO;
+        // 1. the theme and one world: a single slats backdrop under every scene, pulsing on the beat
+        L.theme({ bg: "#0f1115", ink: "#f4f4f5", accent: "#8b5cf6", backdrop: "slats",
+          mark: { name: "Beacon", color: "#8b5cf6", svg: LOGO } });
+        L.music({ bpm: 124 });
+        L.backdrop(tl, world);
+        // the logo's own motion: its waves light up one after the other as it comes into focus
+        const waves = (glyph, at) => glyph && ["w1", "w2"].forEach((c, i) => tl.fromTo(glyph.querySelector("." + c),
+          { opacity: 0.15 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, at + 0.1 + i * 0.15));
+
+        // 2. the hook condenses into the logo, which opens into the product on its laptop screen
+        const hook = L.statement(tl, open, { at: 0.2, lines: ["Know before {your users} do"], hold: 1.3,
+          exit: "mark", markEnd: "open", next: macScene });
+        waves(hook.glyph, hook.markAt);
+        // the laptop grows out of the logo: the camera starts far out, with the laptop the logo's size, and comes in
+        const openAt = hook.end - 0.45;
+        const cam = [{ t: 0, x: 960, y: 650, zoom: 0.12 }, { t: openAt, x: 960, y: 650, zoom: 0.12 }, { t: hook.end + 0.6, x: 960, y: 540, zoom: 1 }];
+        const push = (el, t0, t1, zoom) => {   // push in on an element, hold, then pull back
+          const p = U.point(el, view);
+          cam.push({ t: t0, x: 960, y: 540, zoom: 1 }, { t: t0 + 0.6, x: p.x, y: p.y, zoom }, { t: t1, x: p.x, y: p.y, zoom },
+            { t: t1 + 0.45, x: 960, y: 540, zoom: 1 });
+        };
+        // 3. the feature tour: a title card over the veiled product, then the feature in use
+        const feature = (n, name, at) => {
+          const v = M.veil(tl, { at, scene: macScene, over: title, until: at + 1.7 });
+          L.statement(tl, title, { at: at + 0.1, lines: [name], count: [n, 4], exit: "blur", until: v.clearAt });
+          return v.end;
+        };
+        // 01 live status: a popover morphs out of the menu-bar icon; a highlight steps down its rows
+        let t = feature(1, "Live status", hook.end + 0.3);
+        const pop = $("pop"), rows = pop.querySelectorAll(".row");
+        const icon = U.point($("mbIcon"), pop);
+        U.cursor(tl, view, [{ t: t + 0.1, at: [1500, 560] }, { t: t + 0.55, at: $("mbIcon"), click: true }]);
+        M.morph(tl, { at: t + 0.6, scene: pop, from: { x: icon.x, y: 12, w: 34, h: 24, r: 8 }, to: { r: 16 }, dur: 0.45 });
+        U.select(tl, $("sel"), [{ t: t + 1.3, at: rows[0] }, { t: t + 1.8, at: rows[1] }, { t: t + 2.3, at: rows[2] }]);
+        U.show(tl, $("sel"), t + 1.3, { y: 0, dur: 0.15 });
+        const latAt = t + 2.3;   // a constant: `t` moves on to the next feature before the clock runs
+        U.clock(tl, (s) => { $("lat").textContent = U.count(412, latAt, 0.7, s, { suffix: " ms" }); });
+        push(pop, t + 0.9, t + 3.6, 1.45);
+        M.morph(tl, { at: t + 3.9, scene: pop, from: { r: 16 }, to: { x: icon.x, y: 12, w: 34, h: 24, r: 8 }, dur: 0.35, hide: true, fade: 0.1 });
+        U.cursor(tl, view, [{ t: t + 3.2, at: $("mbIcon"), hide: true }]);
+        // 02 incident timeline: the notch opens into a panel; the events arrive
+        t = feature(2, "Incident timeline", t + 4.4);
+        const panel = $("panel");
+        U.cursor(tl, view, [{ t: t + 0.1, at: [1250, 620] }, { t: t + 0.5, at: document.querySelector(".lu-notch"), click: true, hide: true }]);
+        M.morph(tl, { at: t + 0.55, scene: panel, from: { x: 320, y: 16, w: 190, h: 32, r: 16 }, to: { r: 30 }, dur: 0.5 });
+        U.show(tl, panel.querySelectorAll(".ev"), t + 1.1, { stagger: 0.4, y: 10 });
+        push(panel, t + 0.8, t + 3.4, 1.35);
+        M.morph(tl, { at: t + 3.9, scene: panel, from: { r: 30 }, to: { x: 320, y: 16, w: 190, h: 32, r: 16 }, dur: 0.4, hide: true });
+        // 03 quiet hours: the switch flips and its toast pops in
+        t = feature(3, "Quiet hours", t + 4.4);
+        const prefs = $("prefs"), toast = $("toast");
+        U.show(tl, prefs, t, { y: 16, blur: 6 });
+        U.cursor(tl, view, [{ t: t + 0.3, at: [1500, 900] }, { t: t + 0.9, at: $("toggle"), click: true }, { t: t + 2.4, at: [1600, 950], hide: true }]);
+        U.fromTo(tl, $("knob"), { x: 0 }, { x: 28, duration: 0.2, ease: "power2.out" }, t + 0.95);
+        U.fromTo(tl, $("toggle"), { backgroundColor: "#3f3f46" }, { backgroundColor: "#7c3aed", duration: 0.2 }, t + 0.95);
+        U.pop(tl, toast, t + 1.3, { scale: 0.9 });
+        push(prefs, t + 0.2, t + 2.9, 1.25);
+        U.hide(tl, [prefs, toast], t + 3.4);
+        // 04 team alerts: notifications slide in at the top right
+        t = feature(4, "Team alerts", t + 3.8);
+        U.show(tl, [$("n1"), $("n2")], t + 0.3, { x: 60, y: 0, stagger: 0.7, dur: 0.35 });
+        push($("n1"), t + 0.2, t + 2.2, 1.3);
+        M.camera(tl, view, cam);
+        U.sample(macScene);
+
+        // 4. the recap: every feature, coming into focus one tile after another
+        const r = M.focus(tl, { at: t + 2.9, from: macScene, to: recapStage });
+        const line = L.statement(tl, recapStage, { at: r.end + 0.1, lines: ["Every signal, {one glance}"], y: -250, exit: "none" });
+        U.show(tl, $("recap").children, line.built + 0.2, { stagger: 0.12, blur: 10, y: 14, dur: 0.4 });
+        // 5. the end card
+        const e = M.focus(tl, { at: line.built + 2.4, from: recapStage, to: end });
+        const card = L.endcard(tl, end, { at: e.end + 0.1, tagline: "Every service, at a glance.", cta: "Download for Mac",
+          url: "beacon.example", note: "A fictional app from the /brag examples" });
+        waves(card.glyph, card.markAt);
+        window.__timelines["main"] = tl;
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

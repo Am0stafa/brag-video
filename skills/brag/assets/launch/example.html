@@ -7,8 +7,8 @@
           composition/assets/launch/, keep GSAP in assets/vendor/, paste the product's @font-face rules
           into <style>, and name that family in --lt-font;
        2. set the theme from the app (LaunchText.theme): here light, a dark scene, and a brand-dark close,
-          with the product's mark (its logo, drawn to read on its brand tile; a tile that is a gradient
-          takes `background`, and an app icon that draws its own tile takes tile: "own");
+          with the product's mark (its logo in its own colours, shown bare; an app-icon tile only when
+          the user asks for one: tile: true, a gradient `background`, or tile: "own");
        3. write statements, and join scenes with the transitions (the icon opening like an app, warp,
           camera, focus), and give the logo its own motion (here the horseshoe swings on its nail);
        4. animate the product screen with launch-ui.js: the search typed by a scene clock, the results
@@ -85,13 +85,14 @@
         // labels the app cuts with "…" are cut first, before anything is measured (none here)
         U.ellipsis(ui);
         // 1. themes: a light canvas, a black scene, and the app's own dark brand colours; the mark
-        //    is the product's logo (a horseshoe) on its brand-colour tile, like its app icon (a
-        //    product with no logo leaves out svg and gets the brand orb, which breathes)
+        //    is the product's logo (a horseshoe) in its own colours, bare on the canvas: it comes
+        //    into focus with a soft glow (a product with no logo leaves out svg and gets the brand
+        //    orb, which breathes; tile: true puts the logo on an app-icon tile, only when asked)
         const HORSESHOE = {
           name: "Horse Tinder",
           color: "#4f8cff",
-          svg: '<svg viewBox="0 0 100 100" fill="none"><path d="M30.3 21.8A32 32 0 1 0 69.7 21.8" stroke="#fff" ' +
-            'stroke-width="16" stroke-linecap="round"/><g fill="#4f8cff"><circle cx="21" cy="33.5" r="2.6"/>' +
+          svg: '<svg viewBox="0 0 100 100" fill="none"><path d="M30.3 21.8A32 32 0 1 0 69.7 21.8" stroke="#4f8cff" ' +
+            'stroke-width="16" stroke-linecap="round"/><g fill="#ffffff"><circle cx="21" cy="33.5" r="2.6"/>' +
             '<circle cx="19.1" cy="55.3" r="2.6"/><circle cx="31.6" cy="73.2" r="2.6"/><circle cx="79" cy="33.5" r="2.6"/>' +
             '<circle cx="80.9" cy="55.3" r="2.6"/><circle cx="68.4" cy="73.2" r="2.6"/></g></svg>'
         };
@@ -101,7 +102,7 @@
         // the music's beats (tools/score.json: 124 BPM, first beat at 0); a bundled track passes
         // its cue file's tempo and beats instead. The brand orb (no logo) breathes on them.
         L.music({ bpm: 124 });
-        // the logo's own motion: the horseshoe swings once on its nail as the icon lands
+        // the logo's own motion: the horseshoe swings once on its nail as it comes into focus
         const swing = (s) => s.glyph && tl.fromTo(s.glyph, { rotation: -18, transformOrigin: "50% 12%" },
           { rotation: 0, duration: 1.0, ease: "elastic.out(1, 0.35)" }, s.markAt);
         // 2. the title: the first word streams in token pieces, the lit word flickers and settles
@@ -109,7 +110,7 @@
         // two lines, broken by meaning; the finished line slides out to the left
         const b = L.statement(tl, light, { at: a.end + F, lines: ["Find the horse that fits", "your weekends and your pace"],
           hold: 1.7, exit: "slide" });
-        // a slot, then the line collapses into the product's icon, which opens the dark scene like an app
+        // a slot, then the line condenses into the product's logo, which opens the dark scene like an app
         const c = L.statement(tl, light, { at: b.end + 0.1, lines: ["Match on {slot}"], slot: ["temperament", "pasture", "trust"],
           hold: 1.2, exit: "mark", markEnd: "open", next: dark });
         swing(c);
@@ -141,7 +142,7 @@
         U.cursor(tl, ui, [{ t: w.end + 2.1, at: [1380, 860] }, { t: clickAt, at: rows[0], fx: 0.3, click: true, hide: true }]);
         U.fromTo(tl, rows[0], { backgroundColor: "#f7f8fb" }, { backgroundColor: "#e6efff", duration: 0.2 }, clickAt);
         U.sample(uiScene);   // pinned to the frame while the camera moves the screen
-        // 5. a focus pull into the brand's own dark theme for the close; the line becomes the icon,
+        // 5. a focus pull into the brand's own dark theme for the close; the line becomes the logo,
         //    which slides left while the product's name types in beside it: the closing lockup
         const f = M.focus(tl, { at: clickAt + 0.5, from: uiScene, to: brand });
         const g = L.statement(tl, brand, { at: f.end, lines: ["Swipe right on your next {ride}"], flickerAll: true, hold: 1.4,

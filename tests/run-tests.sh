@@ -53,10 +53,16 @@ test_page() {
   else echo "   frame order: FAILED"; tail -30 "$dir/seek.txt"; failed=$((failed + 1)); fi
 }
 
-test_page kit tests/compositions/kit.html ""
-test_page transitions tests/compositions/transitions.html ""
-test_page marks tests/compositions/marks.html ""
-test_page example "$SKILL/assets/launch/example.html" 22.5
+# `sh tests/run-tests.sh marks backdrops` runs only the pages named; with no names, all of them
+ONLY=" $* "
+run_page() { case "$ONLY" in "  ") test_page "$@" ;; *" $1 "*) test_page "$@" ;; esac; }
+
+run_page kit tests/compositions/kit.html ""
+run_page transitions tests/compositions/transitions.html ""
+run_page marks tests/compositions/marks.html ""
+run_page backdrops tests/compositions/backdrops.html ""
+run_page example "$SKILL/assets/launch/example.html" 22.5
+run_page showcase "$SKILL/assets/launch/showcase.html" ""
 
 if [ "$failed" -eq 0 ]; then echo "all tests passed"; else echo "$failed test(s) failed"; fi
 exit "$failed"

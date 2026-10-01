@@ -1,8 +1,8 @@
 /* launch.css: the look of /brag's default "launch" style (see references/launch-style.md).
-   Statements in a semibold sans on a flat canvas: the film's near-white by default, black for
+   Statements in a semibold sans on a living canvas: the film's near-white by default, black for
    a dark scene, or the app's own background (LaunchText.theme sets --lt-bg, --lt-ink,
-   --lt-accent). Left-aligned lines in a block that stays centred, a thin ink caret, accent
-   thinking dots, and the product's mark (its icon on a brand tile) with one soft ring; plus the
+   --lt-accent), with a slowly moving backdrop drawn from those colours. Left-aligned lines in a block that stays centred, a thin ink caret, accent
+   thinking dots, and the product's mark (its logo, bare, coming into focus with a soft glow); plus the
    cursor, tap and "Sample data" label of launch-ui.js. Set the project's own font through
    --lt-font (embed it with @font-face); Geist SemiBold is the closest free match to the
    reference. */
@@ -11,6 +11,60 @@
   inset: 0;
   overflow: hidden;
   background: var(--lt-bg, #fdfdfd);
+}
+/* a transparent stage for a title over the veiled product (LaunchMotion.veil) */
+.lt-stage.lt-over {
+  background: transparent;
+}
+/* the living backdrop behind the statements (launch-text.js draws and moves its parts): the
+   stage's first child, under everything else on it */
+.lt-bd {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.lt-bd i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  will-change: transform;
+}
+/* the pool of light the slats catch (launch-text.js moves its mask) */
+.lt-bd-lit {
+  position: absolute;
+  inset: 0;
+}
+.lt-bd-group {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+/* a glossy slat fades out toward both ends */
+.lt-bd-slat {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+.lt-bd-blob,
+.lt-bd-glow {
+  border-radius: 50%;
+}
+/* the grid fades out toward its horizon */
+.lt-bd-floor {
+  transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+}
+/* depth on a dark backdrop: darker toward the edges */
+.lt-bd .lt-bd-vignette {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  background: radial-gradient(ellipse at 50% 46%, rgba(0, 0, 0, 0) 48%, rgba(0, 0, 0, 0.5) 100%);
 }
 .lt-block {
   position: absolute;
@@ -29,6 +83,30 @@
   will-change: transform;
 }
 .lt-w { white-space: pre; }
+/* the feature counter above a title ("03 / 17") */
+.lt-count {
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+/* the end card: the name, the tagline, the call to action beside the site, a small note */
+.lt-card-tag,
+.lt-card-note {
+  font-weight: var(--lt-body-weight, 500);
+  letter-spacing: 0;
+}
+.lt-card-row {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+.lt-card-cta {
+  padding: 0.5em 1.15em;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+.lt-card-url {
+  line-height: 1.2;
+}
 .lt-caret {
   display: inline-block;
   width: 0.045em;
@@ -50,8 +128,8 @@
   border-radius: 50%;
   background: var(--lt-accent, #0a84f9);
 }
-/* the product's mark: its logo on a brand-colour tile, like an app icon (launch-text.js sets
-   the size, colour, corner radius and position) */
+/* the product's mark: its logo, bare on the canvas by default (or on a brand-colour tile, like an
+   app icon, when the mark asks; launch-text.js sets the size, colour, corner radius and position) */
 .lt-mark {
   position: absolute;
   left: 0;
@@ -61,6 +139,10 @@
   overflow: hidden;
   will-change: transform;
 }
+/* a bare logo fills its box, and its glow spreads past it */
+.lt-mark.lt-mark-bare {
+  overflow: visible;
+}
 .lt-mark-glyph {
   position: relative; /* above the flat layer below */
   display: grid;
@@ -68,15 +150,17 @@
   width: 62%;
   height: 62%;
 }
-/* an app icon that draws its own tile (mark.tile "own") fills the whole icon */
+/* a bare logo, and an app icon that draws its own tile (mark.tile "own"), fill the whole box */
+.lt-mark-bare .lt-mark-glyph,
 .lt-mark-glyph.lt-mark-own {
   width: 100%;
   height: 100%;
 }
-/* the flat brand colour a gradient tile, or an app icon's own tile, turns into as it grows */
+/* the flat brand colour a tile turns into as it grows, or a bare logo's "fill" grows out of it */
 .lt-mark-flat {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
 }
 .lt-mark-glyph svg {
   display: block;
@@ -93,7 +177,7 @@ img.lt-mark-glyph { object-fit: contain; }
   line-height: 1;
   letter-spacing: -0.02em;
 }
-/* the one soft ring that spreads when the mark lands */
+/* the one soft ring that spreads when the mark lands (the mark's land "pop" only) */
 .lt-ping {
   position: absolute;
   left: 0;
@@ -123,6 +207,13 @@ img.lt-mark-glyph { object-fit: contain; }
   position: absolute;
   inset: 0;
   opacity: 0;
+}
+/* launch-motion.js: the veil that dims the product under a title card */
+.lm-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
 }
 /* launch-ui.js: the cursor, the tap and the "Sample data" label. Each is placed at left 0,
    top 0 and moved with a transform: an absolutely positioned element with no left and top sits
@@ -179,4 +270,194 @@ img.lt-mark-glyph { object-fit: contain; }
   line-height: 1.2;
   white-space: nowrap;
   pointer-events: none;
+}
+/* launch-ui.js: frames that put the product in its context, as the reference product films do
+   (launch-style.md, "The showcase layer"). The product's own UI goes inside the body or screen,
+   at its real size; the camera and the transitions move the frame. Dark by default; add
+   .lu-light for a light product. */
+.lu-select {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.lu-window,
+.lu-browser {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--lu-window-bg, #1c1c1f);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+.lu-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: var(--lu-bar-bg, #232327);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--lt-font, sans-serif);
+}
+.lu-bar i {
+  display: block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+}
+.lu-bar i:nth-of-type(2) { background: #febc2e; }
+.lu-bar i:nth-of-type(3) { background: #28c840; }
+.lu-bar b {
+  position: absolute;
+  left: 90px;
+  right: 90px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 40px;
+  white-space: nowrap;
+  color: var(--lu-bar-ink, #c7c7cc);
+}
+/* a browser's address field, centred in its bar */
+.lu-bar .lu-url {
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  top: 8px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--lu-url-bg, #2e2e33);
+  font-size: 13px;
+  line-height: 24px;
+}
+.lu-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 40px;
+  bottom: 0;
+  overflow: hidden;
+}
+.lu-light.lu-window,
+.lu-light.lu-browser {
+  --lu-window-bg: #ffffff;
+  --lu-bar-bg: #f4f4f5;
+  --lu-bar-ink: #3f3f46;
+  --lu-url-bg: #e4e4e7;
+  box-shadow: 0 40px 120px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(15, 23, 42, 0.1);
+}
+.lu-light .lu-bar { border-bottom-color: rgba(15, 23, 42, 0.08); }
+/* the top of a laptop's screen: a thin bezel, the notch and the menu bar */
+.lu-laptop {
+  position: absolute;
+  padding: 16px 16px 0;
+  border-radius: 30px 30px 0 0;
+  background: #0b0b0c;
+  box-shadow: 0 0 0 2px #2c2c30, 0 40px 120px rgba(0, 0, 0, 0.35);
+}
+.lu-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+  background: var(--lu-screen-bg, #f5f5f7);
+}
+.lu-menubar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  font-family: var(--lt-font, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 32px;
+  white-space: nowrap;
+  color: var(--lu-menubar-ink, #1d1d1f);
+  background: var(--lu-menubar-bg, rgba(255, 255, 255, 0.72));
+}
+.lu-notch {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 5;
+  width: 190px;
+  height: 32px;
+  margin-left: -95px;
+  border-radius: 0 0 16px 16px;
+  background: #0b0b0c;
+}
+/* a phone: its bezel, screen and island */
+.lu-phone {
+  position: absolute;
+  padding: 12px;
+  border-radius: 56px;
+  background: #0b0b0c;
+  box-shadow: 0 0 0 2px #2c2c30, 0 40px 120px rgba(0, 0, 0, 0.4);
+}
+.lu-phone .lu-screen { border-radius: 44px; }
+.lu-island {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  z-index: 5;
+  width: 124px;
+  height: 36px;
+  margin-left: -62px;
+  border-radius: 20px;
+  background: #000000;
+}
+/* the recap: every feature as a tile with its icon and name, rows centred */
+.lu-recap {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+.lu-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: var(--lu-chip-w, 250px);
+  height: var(--lu-chip-h, 150px);
+  border-radius: 20px;
+  background: var(--lu-chip-bg, #1a1a1d);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 20px 50px rgba(0, 0, 0, 0.35);
+  font-family: var(--lt-font, sans-serif);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--lu-chip-ink, #e4e4e7);
+}
+.lu-chip-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+}
+.lu-chip-icon svg {
+  width: 60%;
+  height: 60%;
+}
+.lu-light .lu-chip {
+  --lu-chip-bg: #ffffff;
+  --lu-chip-ink: #27272a;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 20px 50px rgba(15, 23, 42, 0.1);
 }

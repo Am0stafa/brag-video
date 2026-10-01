@@ -206,13 +206,28 @@ td .say { font-family: var(--mono); font-size: 13.5px; }
 .t-launch { background: #fdfdfd; color: #000000; }
 .t-launch .lt, .t-launch .lt-static { font: 600 5.2cqw/1.3 "Geist", "Instrument Sans", system-ui, sans-serif; letter-spacing: -0.012em; }
 .t-launch .lt { position: absolute; left: 0; top: 0; white-space: pre; text-align: left; }
-.t-launch .lt-mark { position: absolute; left: 0; top: 0; display: grid; place-items: center; border-radius: 23%; visibility: hidden; }
-.t-launch .lt-mark svg { width: 62%; height: 62%; display: block; overflow: visible; }
-.t-launch .lt-ring { position: absolute; left: 0; top: 0; border: 2px solid; border-radius: 23%; box-sizing: border-box; visibility: hidden; }
+.t-launch .lt-mark { position: absolute; left: 0; top: 0; display: grid; place-items: center; visibility: hidden; }
+.t-launch .lt-mark svg { width: 100%; height: 100%; display: block; overflow: visible; }
+/* the backdrop: the canvas behind the statements is never one flat colour */
+.t-launch .lt-bd { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.t-launch .lt-bd i { position: absolute; display: block; }
+.t-launch .bd-slats { left: -50%; top: -50%; width: 200%; height: 200%; transform: rotate(42deg); opacity: var(--bd-slats, 0);
+  background: repeating-linear-gradient(90deg, transparent 0, transparent 5cqw, var(--bd-sh) 7cqw, var(--bd-hi) 9cqw, var(--bd-sh) 11cqw, transparent 13cqw, transparent 18cqw); }
+.t-launch .bd-glow { width: 60cqw; height: 60cqw; border-radius: 50%; background: radial-gradient(circle, var(--bd-c) 0%, transparent 65%); }
+.t-launch .bd-glow.a { left: -12cqw; top: -18cqw; --bd-c: var(--bd-c1); }
+.t-launch .bd-glow.b { right: -14cqw; bottom: -22cqw; --bd-c: var(--bd-c2); }
+@media (prefers-reduced-motion: no-preference) {
+  .t-launch .bd-slats { animation: bd-drift 14s linear infinite; }
+  .t-launch .bd-glow.a { animation: bd-float 13s ease-in-out infinite alternate; }
+  .t-launch .bd-glow.b { animation: bd-float 17s ease-in-out -6s infinite alternate-reverse; }
+}
+@keyframes bd-drift { from { background-position: 0 0; } to { background-position: 18cqw 0; } }
+@keyframes bd-float { from { transform: translate(0, 0) scale(1); } to { transform: translate(14cqw, 9cqw) scale(1.1); } }
 .t-launch .lt-name { position: absolute; left: 0; top: 0; white-space: pre; visibility: hidden; font: 600 5.2cqw/1.3 "Geist", "Instrument Sans", system-ui, sans-serif; letter-spacing: -0.012em; }
 .t-launch .lt-static { display: inline-flex; align-items: center; gap: 1.6cqw; }
-.t-launch .lt-static .tile { display: inline-grid; place-items: center; width: 4.9cqw; height: 4.9cqw; border-radius: 23%; }
-.t-launch .lt-static .tile svg { width: 62%; height: 62%; }
+.t-launch .lt-static { position: relative; }
+.t-launch .lt-static .logo { display: inline-grid; place-items: center; width: 4.9cqw; height: 4.9cqw; }
+.t-launch .lt-static .logo svg { width: 100%; height: 100%; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .tryout { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
 .tryout .q { margin: 0 0 6px; font-weight: 700; }
@@ -608,9 +623,9 @@ footer { color: var(--muted); font-size: 14px; }
         <div><b>Type</b><span>how the text looks: big or small, bold or light, capitals or not</span></div>
         <div><b>Transitions</b><span>how one scene becomes the next: a soft fade, a slide, a hard cut</span></div>
       </div>
-      <p><b>The default tone is <code>launch</code>.</b> It is built on how modern AI launch films write on screen, measured frame by frame from one, and made your product's own: big statements that stream in like a model's answer (the first word in small pieces, then whole words), the line gliding to stay centred, and one word lit in colour that flickers through a palette before it settles. Every typed piece lands with a short, deep "key" sound. Statements reset in a single frame. Where the story moves somewhere new, the line collapses into <b>your product's own icon</b> (or, when your app has no logo, a glowing orb in your brand colour that breathes on the beat of the music): it lands with a small bounce and one soft ring, then opens the next scene the way an app opens. The icon plays your logo's own motion as it lands (a horseshoe swings, wings beat, a radar sweeps), and the video closes with your product's name typing in beside it.</p>
-      <p><b>It takes your app's look.</b> White is only the starting point. A dark app gets dark statements with light text, and the lit word takes your brand colour. Every colour is adjusted automatically so it stays readable. If your app icon is a gradient, or draws its own rounded tile, the icon in the video keeps that exact look. Use the <b>Theme</b> buttons under the preview to compare, and <b>Play with sound</b> to hear the typing. Everything else below stays available when you ask for it.</p>
-      <p><b>Your product, in use.</b> Between the statements, /brag rebuilds your real screens and animates them: text types into fields, numbers count up, dialogs open, a cursor glides to a button and clicks, a finger taps a phone screen. A desktop app is laid out at its real size and filmed through a camera that zooms in and out, so its layout stays exactly yours. A big product with dozens of screens gets a <b>screen wall</b>: every screen that has no scene of its own, by its real title, in one camera glide that ends on all of them at once.</p>
+      <p><b>The default tone is <code>launch</code>.</b> It is built on how modern AI launch films write on screen, measured frame by frame from one, and made your product's own: big statements that stream in like a model's answer (the first word in small pieces, then whole words), the line gliding to stay centred, and one word lit in colour that flickers through a palette before it settles. Every typed piece lands with a short, deep "key" sound. Statements reset in a single frame, and they are never typed onto one flat colour: a slow, soft <b>backdrop</b> drawn from your app's colours moves behind them (glossy bars drifting at depth on a dark app, soft glows of your brand colours on a light one, or a gliding grid), and it breathes with the music. Where the story moves somewhere new, the line condenses into <b>your product's own logo</b>, shown bare, the way your product shows it, with no square behind it (or, when your app has no logo, a glowing orb in your brand colour that breathes on the beat of the music): it comes into focus with a soft glow of your brand colour, then opens the next scene the way an app opens. The logo plays its own motion as it arrives (a horseshoe swings, wings beat, a radar sweeps), and the video closes with your product's name typing in beside it, or on an end card.</p>
+      <p><b>It takes your app's look.</b> White is only the starting point. A dark app gets dark statements with light text, and the lit word takes your brand colour. Every colour is adjusted automatically so it stays readable. If you ask for your app icon instead of the bare logo, a gradient icon or one that draws its own rounded tile keeps that exact look. Use the <b>Theme</b> buttons under the preview to compare, and <b>Play with sound</b> to hear the typing. Everything else below stays available when you ask for it.</p>
+      <p><b>Your product, in use.</b> Between the statements, /brag rebuilds your real screens and animates them: text types into fields, numbers count up, dialogs open, a cursor glides to a button and clicks, a finger taps a phone screen. It shows them the way the best product films do: in their context (a window, a browser, the top of a laptop screen with its menu bar and notch, a phone), floating over the same moving background, with no hard cuts. A product demo becomes a <b>feature tour</b>: each feature gets a title card (its name, with a small "03 / 17" counter, typed over the product while it blurs and dims), then the feature in use: a popover springs out of its button, a notch opens into a panel, a highlight steps through the results, the camera pushes in and pulls back. It ends on a <b>recap</b> of every feature as a tile, then an <b>end card</b>: your logo, your name, your tagline and your site, whichever your project really has. A desktop app is laid out at its real size and filmed through a camera that zooms in and out, so its layout stays exactly yours. A big product with dozens of screens gets a <b>screen wall</b>: every screen that has no scene of its own, by its real title, in one camera glide that ends on all of them at once.</p>
       <p>Try it: here is one fictional app, <b>Horse Tinder</b> (swipe to find a horse), shown in each of the ten tones. Click a tone.</p>
       <div class="tone-tabs" id="tone-tabs" role="group" aria-label="Choose a tone"></div>
       <div class="tone-grid">
@@ -736,6 +751,14 @@ allow: Acme Health</pre>
         <li><b>The layout check, summarized.</b> Hyperframes' <code>check</code> looks for text that overlaps, overflows or is hidden. Its full report is long, so /brag reads a summary grouped by kind, severity and moment. Transitions leave their two scenes out of the check while they cross, so planned cross-overs no longer bury the real problems.</li>
         <li><b>Screens that animate the same way every time.</b> The kit that animates your screens computes every frame from the time alone, because frames are rendered out of order. It was tested by drawing the same video forward, backward and in a shuffled order: every visible element matched.</li>
         <li><b>Frames and sound, measured.</b> Contact sheets of every key moment, loudness and peaks measured on the final file, and a check that every typing hit is heard.</li>
+      </ul>
+      <h3>Changes on 01-10-26</h3>
+      <p class="muted">From trying the skill, and two product films studied frame by frame:</p>
+      <ul class="notes">
+        <li><b>Your logo stands on its own.</b> It is no longer put in a square that pops up. It shows bare, in its own colours, and comes into focus out of a soft blur with a glow of your brand colour that breathes with the music. A square app icon is still there if you ask for it ("show our app icon").</li>
+        <li><b>Text never sits on one flat colour.</b> Every statement keeps its typing, its lit word and its key sound, over a slow moving backdrop drawn from your app's colours: glossy bars on a dark app, soft glows on a light one, or a grid. Say "flat background" to turn it off.</li>
+        <li><b>Your product, shown like a product film.</b> One continuous world with no hard cuts; the product in its context; a feature tour with a title card and counter for each feature; popovers and panels that morph open; a highlight that steps through results; a recap of every feature; and an end card.</li>
+        <li>A second working example, <code>showcase.html</code>, and two new test pages; the tests can now run one page at a time.</li>
       </ul>
       <h3>Changes on 30-09-26</h3>
       <p class="muted">From a 114-second demo of a large product, and the problems that run met:</p>
@@ -965,14 +988,18 @@ allow: Acme Health</pre>
      The first word streams in token pieces, then whole words land 4, 4, 5 frames apart; a
      {key} word is typed 2 frames a letter and flickers through the palette for 1 s before it
      settles on the accent; the block glides to stay centred. Themes follow the app. The close
-     is the product's own mark: the line collapses into its icon, which lands with a small
-     bounce and one ring, swings like the horseshoe it shows, then slides left while the
-     name types in beside it. */
+     is the product's own mark: the line condenses into its bare logo, which comes into focus
+     with a soft glow (no tile, no bounce), swings like the horseshoe it shows, then slides left
+     while the name types in beside it. Behind it all, a slow backdrop: soft glows on light,
+     glossy slats drifting on dark. */
   const LT_FRAME = 1000 / 30;
   const LT_THEMES = {
-    light: { bg: '#fdfdfd', ink: '#000000', text: ['#0a84f9', '#e8691a', '#9d7bf0', '#e6608f', '#07a64b'], tile: '#4f8cff', glyph: '#ffffff' },
-    dark: { bg: '#000000', ink: '#ffffff', text: ['#0a84f9', '#f67824', '#cbaef9', '#fbc4c5', '#08b450'], tile: '#4f8cff', glyph: '#ffffff' },
-    app: { bg: '#0b1020', ink: '#e6ecf5', text: ['#22d3ee', '#f67824', '#cbaef9', '#fbc4c5', '#08b450'], tile: '#22d3ee', glyph: '#0b1020' }
+    light: { bg: '#fdfdfd', ink: '#000000', text: ['#0a84f9', '#e8691a', '#9d7bf0', '#e6608f', '#07a64b'], tile: '#4f8cff',
+      bd: { slats: 0, sh: '#fdfdfd', hi: '#fdfdfd', c1: 'rgba(79,140,255,0.16)', c2: 'rgba(157,123,240,0.14)' } },
+    dark: { bg: '#000000', ink: '#ffffff', text: ['#0a84f9', '#f67824', '#cbaef9', '#fbc4c5', '#08b450'], tile: '#4f8cff',
+      bd: { slats: 1, sh: '#0c0c0e', hi: '#2e3036', c1: 'rgba(79,140,255,0.12)', c2: 'rgba(203,174,249,0.08)' } },
+    app: { bg: '#0b1020', ink: '#e6ecf5', text: ['#22d3ee', '#f67824', '#cbaef9', '#fbc4c5', '#08b450'], tile: '#22d3ee',
+      bd: { slats: 1, sh: '#10162a', hi: '#26324c', c1: 'rgba(34,211,238,0.12)', c2: 'rgba(79,140,255,0.08)' } }
   };
   let ltTheme = 'light';
   let soundOn = false;
@@ -982,14 +1009,13 @@ allow: Acme Health</pre>
     { lines: ['Find the horse that fits', 'your weekends and your pace'], hold: 1500 },
     { lines: ['Swipe right on your next {ride}'], hold: 900, lockup: true }
   ];
-  // Horse Tinder's logo, a horseshoe, drawn for its tile (the nail holes take the tile colour)
+  // Horse Tinder's logo, a horseshoe, in its own colours: shown bare, never on a tile
   function horseshoe(th) {
-    return '<svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M30.3 21.8A32 32 0 1 0 69.7 21.8" stroke="' + th.glyph +
-      '" stroke-width="16" stroke-linecap="round"/><g fill="' + th.tile + '"><circle cx="21" cy="33.5" r="2.6"/><circle cx="19.1" cy="55.3" r="2.6"/>' +
+    return '<svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M30.3 21.8A32 32 0 1 0 69.7 21.8" stroke="' + th.tile +
+      '" stroke-width="16" stroke-linecap="round"/><g fill="#ffffff"><circle cx="21" cy="33.5" r="2.6"/><circle cx="19.1" cy="55.3" r="2.6"/>' +
       '<circle cx="31.6" cy="73.2" r="2.6"/><circle cx="79" cy="33.5" r="2.6"/><circle cx="80.9" cy="55.3" r="2.6"/><circle cx="68.4" cy="73.2" r="2.6"/></g></svg>';
   }
   const easeOut = (p) => 1 - Math.pow(1 - p, 3);
-  const easeBack = (p) => { const c = 1.70158, q = p - 1; return 1 + (c + 1) * q * q * q + c * q * q; };
   const elasticOut = (p) => (p <= 0 ? 0 : p >= 1 ? 1 : Math.pow(2, -10 * p) * Math.sin((p - 0.0875) * 2 * Math.PI / 0.35) + 1);
 
   // token-sized pieces for a statement's first word: "Powered" -> "Po", "wer", "ed"
@@ -1045,8 +1071,8 @@ allow: Acme Health</pre>
       if (st.lockup) {
         // the engine's "lockup": collapse 0.2 s, the icon lands in 0.35 s and holds 0.45 s,
         // then slides left in 0.35 s while the name's words land beside it
-        st.markAt = st.exit + 200;
-        st.lockAt = st.markAt + 350 + 450;
+        st.markAt = st.exit + 150;             // the logo comes into focus while the line condenses
+        st.lockAt = st.markAt + 500 + 450;
         events.push({ t: st.markAt, kind: 'pop' });
         st.nameT = [];
         let nt = st.lockAt + 300;
@@ -1125,18 +1151,20 @@ allow: Acme Health</pre>
     const th = LT_THEMES[ltTheme];
     screen.style.background = th.bg;
     screen.style.color = th.ink;
+    [['--bd-slats', th.bd.slats], ['--bd-sh', th.bd.sh], ['--bd-hi', th.bd.hi], ['--bd-c1', th.bd.c1], ['--bd-c2', th.bd.c2]]
+      .forEach(([k, v]) => screen.style.setProperty(k, v));
+    const backdrop = '<div class="lt-bd" aria-hidden="true"><i class="bd-glow a"></i><i class="bd-glow b"></i><i class="bd-slats"></i></div>';
+    const rgb = [1, 3, 5].map((i) => parseInt(th.tile.slice(i, i + 2), 16)).join(',');
     const all = LT_SCRIPT.map((s) => s.lines.join(' ').replace(/[{}]/g, '')).join('. ') + '.';
     if (reduce) {
-      screen.innerHTML = '<div class="s-inner"><span class="lt-static"><span class="tile" style="background:' + th.tile + '">' + horseshoe(th) + '</span>' + esc(LT_NAME) + '</span></div>';
+      screen.innerHTML = backdrop + '<div class="s-inner"><span class="lt-static"><span class="logo">' + horseshoe(th) + '</span>' + esc(LT_NAME) + '</span></div>';
       return;
     }
-    screen.innerHTML = '<div class="lt" aria-hidden="true"></div><div class="lt-ring" aria-hidden="true"></div><div class="lt-mark" aria-hidden="true">' +
+    screen.innerHTML = backdrop + '<div class="lt" aria-hidden="true"></div><div class="lt-mark" aria-hidden="true">' +
       horseshoe(th) + '</div><div class="lt-name" aria-hidden="true"></div><span class="sr-only">' + esc(all + ' ' + LT_NAME + '.') + '</span>';
     const block = $('.lt', screen);
-    const mark = $('.lt-mark', screen), ring = $('.lt-ring', screen), nameEl = $('.lt-name', screen);
+    const mark = $('.lt-mark', screen), nameEl = $('.lt-name', screen);
     const glyph = $('svg', mark);
-    mark.style.background = th.tile;
-    ring.style.borderColor = th.tile;
     nameEl.style.color = th.ink;
     let nameBox = null;
     const { plan, events } = launchPlan();
@@ -1172,34 +1200,40 @@ allow: Acme Health</pre>
       const ty = (screen.clientHeight - h) / 2;
       if (pos.st !== st) { pos.st = st; pos.x = tx; pos.y = ty; }
       else { const k = 1 - Math.exp(-dt / 200); pos.x += (tx - pos.x) * k; pos.y += (ty - pos.y) * k; }
-      let scale = 1;
-      if (st && st.lockup && ms >= st.exit) scale = Math.max(0.02, 1 - Math.pow(Math.min(1, (ms - st.exit) / 200), 3));
+      let scale = 1, fade = 1, soft = 0;
+      if (st && st.lockup && ms >= st.exit) {
+        // the line condenses into the logo: it shrinks toward its centre, blurs and fades
+        const cq = Math.pow(Math.min(1, (ms - st.exit) / 300), 3);
+        scale = 1 - 0.45 * cq; fade = 1 - cq; soft = 0.12 * parseFloat(getComputedStyle(block).fontSize) * cq;
+      }
       block.style.transformOrigin = (w / 2) + 'px ' + (h / 2) + 'px';
       block.style.transform = 'translate(' + pos.x.toFixed(1) + 'px,' + pos.y.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+      block.style.opacity = fade.toFixed(3);
+      block.style.filter = soft > 0.05 ? 'blur(' + soft.toFixed(2) + 'px)' : 'none';
       const markOn = st && st.lockup && ms >= st.markAt;
-      block.style.visibility = markOn ? 'hidden' : 'visible';
+      block.style.visibility = st && st.lockup && ms >= st.exit + 300 ? 'hidden' : 'visible';
       mark.style.visibility = markOn ? 'visible' : 'hidden';
       if (markOn) {
         const fs = parseFloat(getComputedStyle(block).fontSize);
-        const px = fs * 0.936;                      // the icon: 1.3 × the cap height
+        const px = fs * 0.936;                      // the logo: 1.3 × the cap height
         const cx = screen.clientWidth / 2, cy = screen.clientHeight / 2;
         if (!nameBox) { nameEl.textContent = LT_NAME; nameBox = { w: nameEl.offsetWidth, h: nameEl.offsetHeight }; nameEl.textContent = ''; }
         const gap = fs * 0.3, dx = -(gap + nameBox.w) / 2;
         const since = ms - st.markAt;
-        const lq = Math.min(1, since / 350);
-        const sc = lq >= 1 ? 1 : 0.55 + 0.45 * easeBack(lq);   // lands with a small overshoot
+        // it comes into focus: out of a soft blur, settling from 6% larger, no overshoot
+        const fq = easeOut(Math.min(1, since / 500));
+        const sc = 1.06 - 0.06 * fq;
+        mark.style.opacity = Math.min(1, since / 300).toFixed(3);
+        mark.style.filter = fq < 0.999 ? 'blur(' + (px * 0.12 * (1 - fq)).toFixed(2) + 'px)' : 'none';
+        // and a soft glow of its brand colour blooms, then settles to half
+        const g = since < 600 ? easeOut(since / 600) : 1 - 0.5 * easeOut(Math.min(1, (since - 600) / 900));
+        glyph.style.filter = 'drop-shadow(0 0 ' + (px * 0.3).toFixed(1) + 'px rgba(' + rgb + ',' + ((ltTheme === 'light' ? 0.32 : 0.5) * g).toFixed(3) + '))';
         const slide = ms >= st.lockAt ? dx * easeOut(Math.min(1, (ms - st.lockAt) / 350)) : 0;
         mark.style.width = mark.style.height = px.toFixed(1) + 'px';
         mark.style.transform = 'translate(' + (cx + slide - px / 2).toFixed(1) + 'px,' + (cy - px / 2).toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')';
         // the logo's own motion: the horseshoe swings once on its nail
         glyph.style.transformOrigin = '50% 12%';
         glyph.style.transform = 'rotate(' + (-18 * (1 - elasticOut(Math.min(1, since / 1000)))).toFixed(2) + 'deg)';
-        // one soft ring spreads from the landed icon
-        const rq = since / 600;
-        ring.style.visibility = rq < 1 ? 'visible' : 'hidden';
-        ring.style.width = ring.style.height = px.toFixed(1) + 'px';
-        ring.style.transform = 'translate(' + (cx - px / 2).toFixed(1) + 'px,' + (cy - px / 2).toFixed(1) + 'px) scale(' + (1 + 1.4 * easeOut(Math.min(1, rq))).toFixed(3) + ')';
-        ring.style.opacity = rq < 1 ? (0.55 * (1 - rq)).toFixed(3) : '0';
         // the name types in beside it, word by word
         const n = st.nameT.filter((x) => x <= ms).length;
         const shown = LT_NAME.split(' ').slice(0, n).join(' ');
@@ -1207,7 +1241,6 @@ allow: Acme Health</pre>
         nameEl.style.visibility = n ? 'visible' : 'hidden';
         nameEl.style.transform = 'translate(' + (cx + dx + px / 2 + gap).toFixed(1) + 'px,' + (cy - nameBox.h / 2).toFixed(1) + 'px)';
       } else {
-        ring.style.visibility = 'hidden';
         nameEl.style.visibility = 'hidden';
       }
       if (ms < last.end + 100) raf = requestAnimationFrame(frame);

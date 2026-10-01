@@ -22,6 +22,10 @@
  *   wall       the screen wall: a grid of the product's screens that the camera glides across,
  *              then pulls back from, each screen coming alive as the camera reaches it
  *   keys       key sounds for typing inside the UI: every second character, at least 90 ms apart
+ *   select     a selection highlight that steps through a list, like a launcher's results
+ *   frames     CSS in launch.css puts the product in its context: a window (.lu-window), a browser
+ *              (.lu-browser), the top of a laptop screen (.lu-laptop), a phone (.lu-phone), and a recap
+ *              grid of every feature (.lu-recap, .lu-chip)
  *
  * Seek-safe like the rest of the engine. Hyperframes renders frames out of order: it jumps to a
  * frame silently (no callbacks), then steps back 1 ms with callbacks on, so a tween's onUpdate
@@ -190,13 +194,18 @@
     return { at: t, end: t + (els.length - 1) * stagger + (to.duration || 0) };
   }
 
-  /** show(tl, el, t, {dur, y, x, scale, stagger, ease}): hidden until t, then it fades in (0.25 s) rising `y` px (default 8). */
+  /**
+   * show(tl, el, t, {dur, y, x, scale, blur, stagger, ease}): hidden until t, then it fades in (0.25 s)
+   * rising `y` px (default 8); with `blur` (px) it also comes into focus, the way the reference
+   * product films bring in a grid of feature tiles.
+   */
   function show(tl, target, t, o) {
     o = o || {};
     var from = { autoAlpha: 0, y: o.y !== undefined ? o.y : 8 };
     var to = { autoAlpha: 1, y: 0, duration: o.dur || 0.25, ease: o.ease || "power2.out" };
     if (o.x !== undefined) { from.x = o.x; to.x = 0; }
     if (o.scale !== undefined) { from.scale = o.scale; to.scale = 1; }
+    if (o.blur) { from.filter = "blur(" + o.blur + "px)"; to.filter = "blur(0px)"; }
     return fromTo(tl, target, from, to, t, o);
   }
   /** hide(tl, el, t, {dur, stagger, ease}): shown until t, then it fades out (0.2 s). */
@@ -284,6 +293,41 @@
     if (Array.isArray(key.at)) return { x: key.at[0], y: key.at[1] };
     if (key.at && key.at.x !== undefined && key.at.nodeType === undefined) return { x: key.at.x, y: key.at.y };
     return point(key.at, box, key.fx, key.fy);
+  }
+
+  /**
+   * select(tl, bar, keys, {dur, from, until}) -> {keys}: a selection highlight that steps through
+   * a list the way a launcher's or a menu's highlight follows the arrow keys (the reference
+   * product films do this in every search). `bar` is an absolutely placed element inside the same
+   * box as the rows and behind their text (class "lu-select"); at each key's time it moves onto
+   * that key's row (by its left and top, so show() and hide() can still fade it) and takes the row's size, in `dur` seconds (default 0.14).
+   * keys [{t, at}]: at is a row element, measured from the layout. Before the first key it sits on
+   * the first key's row; show or hide it with show() and hide(). Each step is logged as "select"
+   * for a soft tick (sfx_tags.py). Seek-safe: one clock draws it from the time alone.
+   */
+  function select(tl, bar, keys, opts) {
+    opts = opts || {};
+    var b = one(bar, "select()"), box = b.offsetParent, dur = opts.dur || 0.14;
+    var ks = keys.map(function (k) {
+      var e = one(k.at, "select()"), p = point(e, box, 0, 0);
+      return { t: k.t, x: p.x, y: p.y, w: e.offsetWidth, h: e.offsetHeight };
+    }).sort(function (a, c) { return a.t - c.t; });
+    if (!ks.length) throw new Error("launch-ui: select() needs at least one key");
+    function draw(t) {
+      var i = 0;
+      while (i + 1 < ks.length && ks[i + 1].t <= t + 1e-6) i++;
+      var cur = ks[i], prev = i > 0 ? ks[i - 1] : cur;
+      var q = i > 0 ? ease((t - cur.t) / dur, "out") : 1;
+      var x = prev.x + (cur.x - prev.x) * q, y = prev.y + (cur.y - prev.y) * q;
+      var w = prev.w + (cur.w - prev.w) * q, h = prev.h + (cur.h - prev.h) * q;
+      b.style.left = x.toFixed(2) + "px";   // left and top, not transform: show() and hide() tween its transform
+      b.style.top = y.toFixed(2) + "px";
+      b.style.width = w.toFixed(1) + "px";
+      b.style.height = h.toFixed(1) + "px";
+    }
+    clock(tl, draw, { from: opts.from, until: opts.until });
+    ks.slice(1).forEach(function (k) { log(k.t, "select"); });
+    return { keys: ks };
   }
 
   // ---- the cursor and the tap ----
@@ -510,6 +554,6 @@
   window.LaunchUI = {
     clock: clock, typed: typed, doneAt: doneAt, caret: caret, count: count, keys: keys,
     fromTo: fromTo, show: show, hide: hide, pop: pop, swap: swap, quiet: quiet,
-    point: point, cursor: cursor, tap: tap, ellipsis: ellipsis, sample: sample, wall: wall, ease: ease
+    point: point, select: select, cursor: cursor, tap: tap, ellipsis: ellipsis, sample: sample, wall: wall, ease: ease
   };
 })();

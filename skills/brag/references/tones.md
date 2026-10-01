@@ -6,13 +6,13 @@ Ten tones. Each changes scripting energy, pacing, typography personality, and tr
 
 ## `launch` (the default)
 
-**Energy:** Bright, fast, confident. Big statements typed onto a flat canvas, one idea at a time, each typed piece landing with a deep "key" sound, driven by an energetic electronic beat. This is how modern AI product launch films write on screen. The full spec, measured frame by frame, is in [launch-style.md](launch-style.md).
+**Energy:** Bright, fast, confident. Big statements typed onto a living canvas (a slow backdrop drawn from the app's colours: glossy slats on dark, soft brand glows on light), one idea at a time, each typed piece landing with a deep "key" sound, driven by an energetic electronic beat. This is how modern AI product launch films write on screen. The full spec, measured frame by frame, is in [launch-style.md](launch-style.md).
 
 **Voice:** Short statements in sentence case, second person, 2–7 words per line, at most two lines. Parallel frames with a cycling last word ("Match on ___"). Full stops only on complete sentences.
 
 **Typography:** The project's font (else Geist SemiBold) at about 118 px on 1080p, lines left-aligned in a centred block, in the app's own theme: dark text on the app's light background, or light text on its dark one (the film's black on near-white when the app gives nothing). One word per statement lit in the brand colour.
 
-**Motion:** Text streams in like a model's answer: the first word in token-sized pieces, then whole words 4–5 frames apart, no fades; the block glides to stay centred. The lit word flickers through a five-colour palette, then settles. Statements reset in one frame; where the story changes place, the product's icon opens the next scene the way an app opens, a warp rushes back out, a focus pull or a camera deep zoom enters the product. Thinking dots turn into a typing caret. Logos, numbers and screens get their natural motion without being asked (motion-opportunities.md). The engine in `assets/launch/` does the text and the transitions.
+**Motion:** Text streams in like a model's answer: the first word in token-sized pieces, then whole words 4–5 frames apart, no fades; the block glides to stay centred. The lit word flickers through a five-colour palette, then settles. Statements reset in one frame; where the story changes place, the product's bare logo opens the next scene the way an app opens, a warp rushes back out, a focus pull or a camera deep zoom enters the product. Thinking dots turn into a typing caret. Logos, numbers and screens get their natural motion without being asked (motion-opportunities.md). The engine in `assets/launch/` does the text and the transitions.
 
 **Sound:** The deep key on every typed piece (`typing_track.py`), `pulse` music at 120–128 BPM, clicks only on real UI actions.
 
@@ -26,9 +26,9 @@ Horse Tinder for Riders        ← "Riders" flickers, then settles blue
 Match on temperament → pasture → trust
 ```
 
-**Outro style:** The closing line flickers as it lands ("Swipe right on your next ride"), collapses into the product's icon, and the icon slides aside as the name types in beside it: the lockup.
+**Outro style:** The closing line flickers as it lands ("Swipe right on your next ride"), condenses into the product's bare logo as it comes into focus, and the logo slides aside as the name types in beside it: the lockup.
 
-**Transitions:** One-frame resets between statements; 2–4 scene transitions per 30 s: the product's icon opening the next scene like an app, a warp out of a special scene, a focus pull, a camera deep zoom and pull-back; a quick slide-out left. Never a slow crossfade.
+**Transitions:** One-frame resets between statements; 2–4 scene transitions per 30 s: the product's logo opening the next scene like an app, a warp out of a special scene, a focus pull, a camera deep zoom and pull-back; a quick slide-out left. Never a slow crossfade.
 
 **When to use:** Always, unless the prompt asks for another tone. Words that pick it explicitly: "OpenAI-style", "like an AI launch video", "launch style", "typed statements".
 

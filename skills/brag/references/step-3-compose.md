@@ -65,7 +65,7 @@ and story with their own.
 
 ## Visual identity
 - Colors: [hex values]   Fonts: [families, local files]   Logo: [file, rig or not]
-- Product's icon (`launch`): [the logo for its tile, or the brand orb when there is none; the brand colour; the name; the logo motion it plays]
+- Product's mark (`launch`): [the bare logo in its own colours, or the brand orb when there is none; the brand colour for its glow; the name; the logo motion it plays]
 
 ## Storyboard
 Use `brag-plan.md` as the contract. Scene summary:
@@ -108,10 +108,14 @@ Copy the blank composition out of the image (runtime-docker.md), then build
 `<skill-dir>/assets/launch/launch-text.js`, `launch-motion.js`, `launch-ui.js` and
 `launch.css` into `composition/assets/launch/`, link them in `<head>` (the three scripts in
 that order), set the app's theme with `LaunchText.theme(...)` (step 1's light or dark
-colours), build every statement with `LaunchText.statement(...)`, join scenes with
-`LaunchMotion.reveal / warp / focus / camera`, and animate the product screens with
-`LaunchUI` (below), as in `assets/launch/example.html` and launch-style.md, "Build it".
-Then:
+colours, its backdrop and its mark), build every statement with `LaunchText.statement(...)`,
+join scenes with `LaunchMotion.reveal / warp / focus / camera / veil / morph`, and animate the
+product screens with `LaunchUI` (below), as in `assets/launch/example.html` and
+launch-style.md, "Build it". For a product demo, or a feature with several uses, follow
+launch-style.md, "The showcase layer", and start from `assets/launch/showcase.html`: one
+world under a single backdrop, the product framed in its context (`.lu-window`, `.lu-browser`,
+`.lu-laptop`, `.lu-phone`), a title card per feature over the veiled product, the recap of
+every feature and the end card. Then:
 
 - **Local assets only**: GSAP is already in `assets/vendor/gsap.min.js`; put the product's
   fonts in `assets/fonts/` (the project's files, or `fetch_fonts.py`), logos and audio in
@@ -171,6 +175,8 @@ run were UI animation bugs these helpers now prevent:
 | `U.sample(scene)` | the "Sample data" label, pinned to the frame, outside the camera | a label that zooms and slides with the UI |
 | `U.wall(tl, wallEl, {at, pan})` | the screen wall (launch-style.md): a camera glide over every screen's real title, then a pull-back | covering 30+ screens honestly in a few seconds |
 | `U.keys(at, text, cps)` | logs key sounds for typing inside the UI: every second character, at least 90 ms apart | hits 36 ms apart that buzz |
+| `U.select(tl, bar, [{t, at: row}])` | a highlight that steps through a list, taking each row's box, like a launcher's selection | a highlight drawn by hand that drifts off its rows when the list or the camera moves |
+| `U.show(tl, el, t, {blur})` | an appearance that also comes into focus, for a grid of tiles | tiles that pop in flat, or a focus-in written as a second tween that fights the first |
 
 Call `U.ellipsis(ui)` first in `build()`, before anything measures a point. Clicks, taps and
 keys are logged in the event log, so `sfx_tags.py` places their sounds (audio.md). The
@@ -322,7 +328,8 @@ docker run --rm -v "<skill-dir>/scripts":/skill:ro -v "$OUT":/work -w /work brag
 
 ## 7. Audio-reactive background (optional)
 
-Optional, and off for `launch` (its canvas stays flat). For other tones, when a scene
+In `launch`, the backdrop already breathes with the music: each bar's downbeat lifts its
+light (launch-style.md, "The backdrop"), so nothing more is needed. For other tones, when a scene
 feels static, one existing element may breathe with the music: the background glow, a
 light wash, the card's presence. Never use waveform or equalizer graphics, and drive it
 from a proxy tween's time like every other motion here (not from per-frame `tl.call()`
@@ -368,8 +375,10 @@ stranger and better than the invented version.
 - [ ] Every item of `## Motion found` is built (or kept still because the prompt or the
       brand's rules say so, noted in the plan).
 - [ ] With `launch`: the statements use the app's theme; the theme has the product's
-      mark (its logo, or the brand orb when it has none; its brand colour; its name), and a
-      logo icon plays the logo's motion; there is no colour-cycling dot; the reading-time
+      mark (its bare logo in its own colours, with no tile unless the user asked for the app
+      icon, or the brand orb when it has none; its brand colour; its name), and the logo
+      plays its motion; the statements sit on a backdrop (not one flat colour, unless the
+      prompt asked); there is no colour-cycling dot; the reading-time
       table was all `ok` before the music was composed; the typing track was made from the
       final timeline.
 - [ ] Product screens are animated with `LaunchUI` (or follow its rules): `ellipsis` ran

@@ -31,7 +31,7 @@ finalize.py will add to reach --target (-14 LUFS), so that step keeps the hits i
 play that file instead of the music, at the same volume. --placed lists the hits for
 audio_report.py --hits.
 --under-voice keeps only word and piece hits, 6 dB lower. --transitions adds a soft low whoosh
-when a scene opens (open, fill, reveal, warp) and a small pop when the product's mark lands;
+when a scene opens (open, fill, reveal, warp, morph) and a small pop when the product's mark lands;
 with --cues (the music's cue file) it skips the whoosh where the music has its own hit.
 """
 import argparse
@@ -227,7 +227,7 @@ def main():
                 g = 10 ** ((a.level + gain_db) / 20)
             g = min(g, 10 ** (peak_cap / 20))  # the hit is peak-normalised, so this caps its peak
             last_hit = t
-        elif a.transitions and k in ("open", "fill", "reveal", "warp", "wipe"):
+        elif a.transitions and k in ("open", "fill", "reveal", "warp", "wipe", "morph"):
             if any(abs(t - h) < 0.3 for h in music_hits):
                 continue  # the music already hits here
             hit, g = whoosh(a.seed + i), 10 ** ((a.level - 10) / 20)
